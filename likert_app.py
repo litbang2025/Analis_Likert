@@ -10,7 +10,7 @@ st.set_page_config(layout="wide")
 sns.set(style="whitegrid")
 
 # Judul Aplikasi
-st.title("📊 Analisis Skala Likert Profesional")
+st.title("📊 Tool Analisis Skala Likert Litbang IHBS")
 
 # Upload File
 uploaded_file = st.file_uploader("📥 Upload file CSV hasil survei", type=["csv"])
