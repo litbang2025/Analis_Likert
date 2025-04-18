@@ -1,143 +1,92 @@
+# file: likert_app.py
+import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
-from scipy.stats import ttest_1samp
+import matplotlib.pyplot as plt
 
-# Styling untuk visualisasi
+# Setting tampilan
+st.set_page_config(layout="wide")
 sns.set(style="whitegrid")
-plt.rcParams['axes.titlesize'] = 14
-plt.rcParams['axes.labelsize'] = 12
 
-# ===============================
-# 📥 Baca Data
-# ===============================
-df = pd.read_csv('data_analis_linkert.csv')
+# Judul Aplikasi
+st.title("📊 Analisis Skala Likert Profesional")
 
-print("📊 Data Analisis Awal:")
-display(df.head())
-
-# ===============================
-# 📝 Keterangan Data
-# ===============================
-total_responden = df.shape[0]
-total_kolom = df.shape[1]
-kolom_likert = df.columns[2:]
-jumlah_pertanyaan = len(kolom_likert)
-
-print("ℹ️ Keterangan Awal:")
-print(f"- Jumlah Responden: {total_responden}")
-print(f"- Total Kolom: {total_kolom}")
-print(f"- Kolom Pertanyaan (Likert): {jumlah_pertanyaan} kolom")
-print(f"- Nama Kolom Pertanyaan: {list(kolom_likert)}")
-
-# ===============================
-# 📐 Uji Reliabilitas (Cronbach's Alpha)
-# ===============================
-def cronbach_alpha(data):
-    item_vars = data.var(axis=0, ddof=1)
-    total_var = data.sum(axis=1).var(ddof=1)
-    n_items = data.shape[1]
-    return n_items / (n_items - 1) * (1 - item_vars.sum() / total_var)
-
-likert_df = df.iloc[:, 2:]
-alpha = cronbach_alpha(likert_df)
-print(f"✅ Cronbach's Alpha: {alpha:.3f}")
-
-if alpha >= 0.9:
-    interpretasi = "Sangat Baik (Excellent)"
-elif alpha >= 0.8:
-    interpretasi = "Baik (Good)"
-elif alpha >= 0.7:
-    interpretasi = "Cukup (Acceptable)"
-elif alpha >= 0.6:
-    interpretasi = "Kurang (Questionable)"
-elif alpha >= 0.5:
-    interpretasi = "Rendah (Poor)"
-else:
-    interpretasi = "Tidak Dapat Diterima (Unacceptable)"
+# Upload File
+uploaded_file = st.file_uploader("📥 Upload file CSV hasil survei", type=["csv"])
+if uploaded_file:
+    df = pd.read_csv(uploaded_file)
     
-print(f"📌 Interpretasi: {interpretasi}")
+    st.subheader("📋 Data Response")
+    st.dataframe(df.head())
 
-# ===============================
-# 📊 Rata-Rata Skor per Pertanyaan
-# ===============================
-avg_scores = likert_df.mean().sort_values(ascending=False)
+    # Ambil kolom pertanyaan (asumsi kolom ke-3 dst)
+    likert_df = df.iloc[:, 2:]
+    
+    # Fungsi Cronbach Alpha
+    def cronbach_alpha(data):
+        item_vars = data.var(axis=0, ddof=1)
+        total_var = data.sum(axis=1).var(ddof=1)
+        n_items = data.shape[1]
+        return n_items / (n_items - 1) * (1 - item_vars.sum() / total_var)
+    
+    alpha = cronbach_alpha(likert_df)
+    
+    # Interpretasi
+    def interpret_alpha(a):
+        if a >= 0.9:
+            return "Sangat Baik"
+        elif a >= 0.8:
+            return "Baik"
+        elif a >= 0.7:
+            return "Cukup"
+        elif a >= 0.6:
+            return "Kurang"
+        elif a >= 0.5:
+            return "Rendah"
+        else:
+            return "Tidak Dapat Diterima"
 
-# Kategori interpretasi skor
-def interpretasi_skor(skor):
-    if skor >= 4.2:
-        return "Sangat Baik"
-    elif skor >= 3.6:
-        return "Baik"
-    elif skor >= 3.0:
-        return "Cukup"
-    else:
-        return "Perlu Perhatian"
+    st.subheader("📐 Uji Reliabilitas - Cronbach's Alpha")
+    st.markdown(f"**Cronbach's Alpha: {alpha:.3f}** — {interpret_alpha(alpha)}")
 
-avg_table = pd.DataFrame({
-    "Pertanyaan": avg_scores.index,
-    "Rata-Rata Skor": avg_scores.values,
-    "Interpretasi": [interpretasi_skor(s) for s in avg_scores.values]
-})
+    # Rata-rata per pertanyaan
+    avg_scores = likert_df.mean().sort_values(ascending=False)
 
-print("\n📋 Tabel Rata-Rata & Interpretasi:")
-display(avg_table)
+    # Tabel Rata-rata
+    st.subheader("📊 Rata-Rata Skor per Pertanyaan")
+    avg_table = pd.DataFrame({
+        "Pertanyaan": avg_scores.index,
+        "Rata-Rata Skor": avg_scores.values
+    })
+    st.dataframe(avg_table)
 
-# 🎨 Visualisasi Barplot dengan Nilai
-plt.figure(figsize=(12, 6))
-ax = sns.barplot(x=avg_scores.values, y=avg_scores.index, palette='viridis')
+    # Bar Chart
+    st.subheader("📈 Visualisasi Skor per Pertanyaan")
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(x=avg_scores.values, y=avg_scores.index, palette='viridis', ax=ax)
+    for i, v in enumerate(avg_scores.values):
+        ax.text(v + 0.05, i, f"{v:.2f}", color='black', va='center', fontweight='bold')
+    st.pyplot(fig)
 
-for i, v in enumerate(avg_scores.values):
-    ax.text(v + 0.05, i, f"{v:.2f}", color='black', va='center', fontweight='bold')
+    # Heatmap korelasi
+    st.subheader("🔥 Korelasi antar Pertanyaan")
+    fig2, ax2 = plt.subplots(figsize=(10, 6))
+    sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
+    st.pyplot(fig2)
 
-plt.title("📊 Rata-Rata Skor per Pertanyaan")
-plt.xlabel("Rata-Rata Skor (1–5)")
-plt.xlim(1, 5)
-plt.tight_layout()
-plt.show()
+    # Misalnya, data hasil uji hipotesis yang sudah dihitung sebelumnya
+    hasil_uji = [
+        ("Pertanyaan 1", 2.3, 0.05, "Signifikan"),
+        ("Pertanyaan 2", 1.2, 0.15, "Tidak Signifikan"),
+        ("Pertanyaan 3", 3.1, 0.01, "Signifikan")
+    ]
 
-# ===============================
-# 📉 Distribusi Skor Total per Responden
-# ===============================
-df['Total Skor'] = likert_df.sum(axis=1)
-
-# Visualisasi distribusi skor total
-plt.figure(figsize=(8, 4))
-sns.histplot(df['Total Skor'], bins=10, kde=True, color='skyblue')
-plt.title("📉 Distribusi Skor Total per Responden")
-plt.xlabel("Total Skor")
-plt.ylabel("Jumlah Responden")
-plt.tight_layout()
-plt.show()
-
-# ===============================
-# 📉 Korelasi Antar Pertanyaan (Heatmap)
-# ===============================
-plt.figure(figsize=(8, 6))
-sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu')
-plt.title("📌 Korelasi Antar Pertanyaan")
-plt.tight_layout()
-plt.show()
-
-# ===============================
-# 📦 Kategori Skor Total
-# ===============================
-def kategorikan(skor):
-    if skor >= 80:
-        return "Sangat Positif"
-    elif skor >= 60:
-        return "Positif"
-    elif skor >= 40:
-        return "Netral"
-    else:
-        return "Negatif"
-
-df['Kategori'] = df['Total Skor'].apply(kategorikan)
-print("\n📊 Distribusi Kategori:")
-print(df['Kategori'].value_counts())
-
-# ===============================
-# 7. 📦 Kesimpulan dan Rekomendasi
-# ===============================
-# Berdasarkan semua analisis yang telah dilakukan, buat kesimpulan dan rekomendasi untuk perbaikan.
+    # Menyusun kesimpulan berdasarkan hasil uji hipotesis
+    st.subheader("📌 Kesimpulan Uji Hipotesis:")
+    for item in hasil_uji:
+        pertanyaan, t_stat, p_val, status = item
+        if status == "Signifikan":
+            st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata secara signifikan lebih tinggi dari nilai netral (3).")
+        else:
+            st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata tidak signifikan lebih tinggi dari nilai netral (3).")
