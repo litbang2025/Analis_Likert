@@ -5,32 +5,17 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 # Setting tampilan
-st.set_page_config(layout="wide", page_title="Analisis Skala Likert IHBS")
+st.set_page_config(layout="wide")
 sns.set(style="whitegrid")
-
-# Menambahkan Logo Aplikasi
-st.image("https://via.placeholder.com/150", width=150)  # Ganti dengan URL logo yang sesuai
 
 # Judul Aplikasi
 st.title("📊 Tool Analisis Skala Likert Litbang IHBS")
 
-# Deskripsi Aplikasi
-st.markdown("""
-Aplikasi ini digunakan untuk menganalisis hasil survei menggunakan **Skala Likert**. 
-Dengan alat ini, Anda dapat menghitung **Cronbach's Alpha**, melihat **rata-rata skor per pertanyaan**, 
-dan menganalisis **korelasi antar pertanyaan**.
-Silakan unggah file CSV yang berisi data hasil survei Anda.
-""")
-
 # Upload File
 uploaded_file = st.file_uploader("📥 Upload file CSV hasil survei", type=["csv"])
 if uploaded_file:
-    # Loading bar untuk menunjukkan proses loading
-    with st.spinner('Memuat data...'):
-        df = pd.read_csv(uploaded_file)
-
-    st.success("File berhasil dimuat!")
-
+    df = pd.read_csv(uploaded_file)
+    
     st.subheader("📋 Data Response")
     st.dataframe(df.head())
 
@@ -43,9 +28,9 @@ if uploaded_file:
         total_var = data.sum(axis=1).var(ddof=1)
         n_items = data.shape[1]
         return n_items / (n_items - 1) * (1 - item_vars.sum() / total_var)
-
+    
     alpha = cronbach_alpha(likert_df)
-
+    
     # Interpretasi
     def interpret_alpha(a):
         if a >= 0.9:
@@ -83,11 +68,27 @@ if uploaded_file:
         ax.text(v + 0.05, i, f"{v:.2f}", color='black', va='center', fontweight='bold')
     st.pyplot(fig)
 
+    # Fitur Download Visualisasi sebagai Gambar
+    st.download_button(
+        label="Unduh Visualisasi (PNG)",
+        data=fig.savefig('/mnt/data/visualisasi.png', format='png'),
+        file_name="visualisasi_skala_likert.png",
+        mime="image/png"
+    )
+
     # Heatmap korelasi
     st.subheader("🔥 Korelasi antar Pertanyaan")
     fig2, ax2 = plt.subplots(figsize=(10, 6))
     sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
     st.pyplot(fig2)
+
+    # Fitur Download Heatmap sebagai Gambar
+    st.download_button(
+        label="Unduh Heatmap (PNG)",
+        data=fig2.savefig('/mnt/data/heatmap.png', format='png'),
+        file_name="heatmap_korelasi.png",
+        mime="image/png"
+    )
 
     # Misalnya, data hasil uji hipotesis yang sudah dihitung sebelumnya
     hasil_uji = [
@@ -105,32 +106,10 @@ if uploaded_file:
         else:
             st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata tidak signifikan lebih tinggi dari nilai netral (3).")
 
-# Additional Features
-# Menambahkan dropdown untuk pilihan analisis visualisasi
-analysis_option = st.selectbox(
-    "Pilih Jenis Analisis yang Ingin Ditampilkan:",
-    ("Visualisasi Rata-rata", "Heatmap Korelasi", "Kesimpulan Uji Hipotesis")
-)
-
-if analysis_option == "Visualisasi Rata-rata":
-    st.write("Menampilkan visualisasi rata-rata skor per pertanyaan...")
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(x=avg_scores.values, y=avg_scores.index, palette='viridis', ax=ax)
-    for i, v in enumerate(avg_scores.values):
-        ax.text(v + 0.05, i, f"{v:.2f}", color='black', va='center', fontweight='bold')
-    st.pyplot(fig)
-
-elif analysis_option == "Heatmap Korelasi":
-    st.write("Menampilkan heatmap korelasi antar pertanyaan...")
-    fig2, ax2 = plt.subplots(figsize=(10, 6))
-    sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
-    st.pyplot(fig2)
-
-elif analysis_option == "Kesimpulan Uji Hipotesis":
-    st.write("Menampilkan hasil kesimpulan uji hipotesis...")
-    for item in hasil_uji:
-        pertanyaan, t_stat, p_val, status = item
-        if status == "Signifikan":
-            st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata secara signifikan lebih tinggi dari nilai netral (3).")
-        else:
-            st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata tidak signifikan lebih tinggi dari nilai netral (3).")
+    # Fitur Download Hasil Rata-Rata sebagai CSV
+    st.download_button(
+        label="Unduh Hasil Rata-Rata Skor",
+        data=avg_table.to_csv(index=False).encode('utf-8'),
+        file_name="rata_rata_skor.csv",
+        mime="text/csv"
+    )
