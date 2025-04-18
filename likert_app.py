@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import scipy.stats as stats
 import io
 
 # Setting tampilan
@@ -23,6 +24,16 @@ if uploaded_file:
     # Ambil kolom pertanyaan (asumsi kolom ke-3 dst)
     likert_df = df.iloc[:, 2:]
 
+    # Keterangan Data
+    num_respondents = len(df)
+    num_columns = len(df.columns)
+    num_questions = likert_df.shape[1]
+    
+    st.subheader("📝 Keterangan Data")
+    st.write(f"Jumlah Responden: {num_respondents}")
+    st.write(f"Jumlah Total Kolom (termasuk ID dan Nama): {num_columns}")
+    st.write(f"Jumlah Pertanyaan Berbasis Skala Likert: {num_questions}")
+
     # Fungsi Cronbach Alpha
     def cronbach_alpha(data):
         item_vars = data.var(axis=0, ddof=1)
@@ -41,9 +52,7 @@ if uploaded_file:
         elif a >= 0.7:
             return "Cukup"
         elif a >= 0.6:
-            return "Kurang"
-        elif a >= 0.5:
-            return "Rendah"
+            return "Perlu Perbaikan"
         else:
             return "Tidak Dapat Diterima"
 
@@ -59,9 +68,13 @@ if uploaded_file:
         "Pertanyaan": avg_scores.index,
         "Rata-Rata Skor": avg_scores.values
     })
+    # Kategorisasi Skor Rata-Rata
+    avg_table['Interpretasi'] = avg_table['Rata-Rata Skor'].apply(lambda x: 'Sangat Baik' if x >= 4.2 else 
+                                                                 ('Baik' if 3.6 <= x < 4.2 else 
+                                                                  ('Cukup' if 3.0 <= x < 3.6 else 'Perlu Perhatian')))
     st.dataframe(avg_table)
 
-    # Bar Chart
+    # Bar Chart untuk Rata-Rata
     st.subheader("📈 Visualisasi Skor per Pertanyaan")
     fig, ax = plt.subplots(figsize=(10, 6))
     sns.barplot(x=avg_scores.values, y=avg_scores.index, palette='viridis', ax=ax)
@@ -69,57 +82,51 @@ if uploaded_file:
         ax.text(v + 0.05, i, f"{v:.2f}", color='black', va='center', fontweight='bold')
     st.pyplot(fig)
 
-    # Fitur Download Visualisasi sebagai Gambar (PNG)
-    def get_img_download_link(fig, filename):
-        # Save plot to a BytesIO object
-        img_io = io.BytesIO()
-        fig.savefig(img_io, format='png')
-        img_io.seek(0)
-        return img_io
-
-    img_io = get_img_download_link(fig, 'visualisasi_skala_likert.png')
-    st.download_button(
-        label="Unduh Visualisasi (PNG)",
-        data=img_io,
-        file_name="visualisasi_skala_likert.png",
-        mime="image/png"
-    )
-
-    # Heatmap korelasi
-    st.subheader("🔥 Korelasi antar Pertanyaan")
+    # Distribusi Skor Total Responden
+    st.subheader("📉 Distribusi Skor Total Responden")
+    total_scores = likert_df.sum(axis=1)
     fig2, ax2 = plt.subplots(figsize=(10, 6))
-    sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
+    sns.histplot(total_scores, kde=True, bins=15, ax=ax2)
+    ax2.set_title("Distribusi Skor Total Responden")
+    ax2.set_xlabel("Skor Total")
+    ax2.set_ylabel("Frekuensi")
     st.pyplot(fig2)
 
-    # Fitur Download Heatmap sebagai Gambar (PNG)
-    img_io2 = get_img_download_link(fig2, 'heatmap_korelasi.png')
-    st.download_button(
-        label="Unduh Heatmap (PNG)",
-        data=img_io2,
-        file_name="heatmap_korelasi.png",
-        mime="image/png"
-    )
+    # Identifikasi Pertanyaan dengan Nilai Terendah
+    st.subheader("🔍 Identifikasi Pertanyaan dengan Nilai Terendah")
+    lowest_questions = avg_table.nsmallest(3, 'Rata-Rata Skor')
+    st.dataframe(lowest_questions)
 
-    # Misalnya, data hasil uji hipotesis yang sudah dihitung sebelumnya
-    hasil_uji = [
-        ("Pertanyaan 1", 2.3, 0.05, "Signifikan"),
-        ("Pertanyaan 2", 1.2, 0.15, "Tidak Signifikan"),
-        ("Pertanyaan 3", 3.1, 0.01, "Signifikan")
-    ]
+    # Heatmap korelasi
+    st.subheader("🌡️ Heatmap Korelasi Antar Pertanyaan")
+    fig3, ax3 = plt.subplots(figsize=(10, 6))
+    sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax3)
+    st.pyplot(fig3)
 
-    # Menyusun kesimpulan berdasarkan hasil uji hipotesis
-    st.subheader("📌 Kesimpulan Uji Hipotesis:")
-    for item in hasil_uji:
-        pertanyaan, t_stat, p_val, status = item
-        if status == "Signifikan":
-            st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata secara signifikan lebih tinggi dari nilai netral (3).")
-        else:
-            st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata tidak signifikan lebih tinggi dari nilai netral (3).")
+    # Kategorisasi Total Skor Responden
+    st.subheader("📦 Kategorisasi Total Skor Responden")
+    score_categories = pd.cut(total_scores, bins=[-np.inf, 40, 59, 79, np.inf], labels=["Negatif", "Netral", "Positif", "Sangat Positif"])
+    score_category_table = pd.DataFrame({
+        "Responden": df.iloc[:, 0],
+        "Skor Total": total_scores,
+        "Kategori": score_categories
+    })
+    st.dataframe(score_category_table)
 
-    # Fitur Download Hasil Rata-Rata sebagai CSV
-    st.download_button(
-        label="Unduh Hasil Rata-Rata Skor",
-        data=avg_table.to_csv(index=False).encode('utf-8'),
-        file_name="rata_rata_skor.csv",
-        mime="text/csv"
-    )
+    # Uji Hipotesis - Uji-t untuk setiap pertanyaan
+    st.subheader("🧪 Uji Hipotesis (Opsional)")
+    t_test_results = []
+    for question in likert_df.columns:
+        t_stat, p_value = stats.ttest_1samp(likert_df[question], 3)
+        t_test_results.append({
+            "Pertanyaan": question,
+            "t-statistic": t_stat,
+            "p-value": p_value,
+            "Signifikan (p < 0.05)": "Ya" if p_value < 0.05 else "Tidak"
+        })
+    t_test_df = pd.DataFrame(t_test_results)
+    st.dataframe(t_test_df)
+
+    # Tabel Rangkuman
+    st.subheader("📋 Tabel Rangkuman")
+    st.dataframe(avg_table[['Pertanyaan', 'Rata-Rata Skor', 'Interpretasi']])
