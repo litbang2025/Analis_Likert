@@ -74,20 +74,19 @@ if uploaded_file:
     fig2, ax2 = plt.subplots(figsize=(10, 6))
     sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
     st.pyplot(fig2)
-import streamlit as st
 
-# Misalnya, data hasil uji hipotesis yang sudah dihitung sebelumnya
-hasil_uji = [
-    ("Pertanyaan 1", 2.3, 0.05, "Signifikan"),
-    ("Pertanyaan 2", 1.2, 0.15, "Tidak Signifikan"),
-    ("Pertanyaan 3", 3.1, 0.01, "Signifikan")
-]
+    # Misalnya, data hasil uji hipotesis yang sudah dihitung sebelumnya
+    hasil_uji = [
+        ("Pertanyaan 1", 2.3, 0.05, "Signifikan"),
+        ("Pertanyaan 2", 1.2, 0.15, "Tidak Signifikan"),
+        ("Pertanyaan 3", 3.1, 0.01, "Signifikan")
+    ]
 
-# Menyusun kesimpulan berdasarkan hasil uji hipotesis
-st.subheader("📌 Kesimpulan Uji Hipotesis:")
-for item in hasil_uji:
-    pertanyaan, t_stat, p_val, status = item
-    if status == "Signifikan":
-        st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata secara signifikan lebih tinggi dari nilai netral (3).")
-    else:
-        st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata tidak signifikan lebih tinggi dari nilai netral (3).")
+    # Menyusun kesimpulan berdasarkan hasil uji hipotesis
+    st.subheader("📌 Kesimpulan Uji Hipotesis:")
+    for item in hasil_uji:
+        pertanyaan, t_stat, p_val, status = item
+        if status == "Signifikan":
+            st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata secara signifikan lebih tinggi dari nilai netral (3).")
+        else:
+            st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata tidak signifikan lebih tinggi dari nilai netral (3).")
