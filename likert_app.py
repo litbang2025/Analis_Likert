@@ -83,6 +83,74 @@ if uploaded_file:
             ax.text(v + 0.05, i, f"{v:.2f}", color='black', va='center', fontweight='bold')
         st.pyplot(fig)
 
+
+    # 5. 📉 IDENTIFIKASI PERTANYAAN TERENDAH, PERTENGAHAN, & TERTINGGI
+# ===============================
+# Menemukan 3 pertanyaan dengan skor rata-rata tertinggi, terendah, dan pertengahan
+lowest_scores = avg_scores.nsmallest(3)  # 3 pertanyaan terendah
+highest_scores = avg_scores.nlargest(3)  # 3 pertanyaan tertinggi
+median_scores = avg_scores.iloc[len(avg_scores)//3:2*len(avg_scores)//3]  # 3 pertanyaan pertengahan
+
+# Menampilkan hasil
+st.subheader("📉 3 Pertanyaan dengan Skor Terendah")
+st.dataframe(lowest_scores)
+
+st.subheader("📈 3 Pertanyaan dengan Skor Tertinggi")
+st.dataframe(highest_scores)
+
+st.subheader("📊 3 Pertanyaan dengan Skor Pertengahan")
+st.dataframe(median_scores)
+
+# Menambahkan interpretasi untuk setiap kategori
+lowest_scores_interpretation = pd.DataFrame({
+    "Pertanyaan": lowest_scores.index,
+    "Skor Rata-rata": lowest_scores.values,
+    "Interpretasi": [interpretasi_skor(s) for s in lowest_scores.values]
+})
+
+highest_scores_interpretation = pd.DataFrame({
+    "Pertanyaan": highest_scores.index,
+    "Skor Rata-rata": highest_scores.values,
+    "Interpretasi": [interpretasi_skor(s) for s in highest_scores.values]
+})
+
+median_scores_interpretation = pd.DataFrame({
+    "Pertanyaan": median_scores.index,
+    "Skor Rata-rata": median_scores.values,
+    "Interpretasi": [interpretasi_skor(s) for s in median_scores.values]
+})
+
+# Menampilkan interpretasi
+st.subheader("📝 Interpretasi Pertanyaan dengan Skor Terendah")
+st.dataframe(lowest_scores_interpretation)
+
+st.subheader("📝 Interpretasi Pertanyaan dengan Skor Tertinggi")
+st.dataframe(highest_scores_interpretation)
+
+st.subheader("📝 Interpretasi Pertanyaan dengan Skor Pertengahan")
+st.dataframe(median_scores_interpretation)
+
+# Grafik perbandingan skor
+fig, ax = plt.subplots(figsize=(12, 6))
+
+# Gabungkan ketiganya
+combined_scores = pd.concat([lowest_scores, highest_scores, median_scores])
+labels = list(lowest_scores.index) + list(highest_scores.index) + list(median_scores.index)
+values = list(lowest_scores.values) + list(highest_scores.values) + list(median_scores.values)
+
+# Plotting
+sns.barplot(x=combined_scores.index, y=values, palette='coolwarm', ax=ax)
+
+# Menambah label
+ax.set_xticklabels(labels, rotation=45, ha="right")
+ax.set_xlabel('Pertanyaan')
+ax.set_ylabel('Skor Rata-rata')
+ax.set_title('Perbandingan Skor Terendah, Pertengahan & Tertinggi')
+
+# Menampilkan grafik
+st.pyplot(fig)
+
+
     # --- Uji Reliabilitas ---
     elif analisis_terpilih == "Uji Reliabilitas":
         st.subheader("📐 Uji Reliabilitas - Cronbach's Alpha")
