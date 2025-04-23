@@ -39,7 +39,6 @@ if uploaded_file is not None:
 
     # Ambil data Likert
     likert_df = df.iloc[:, 2:]
-
     # ===============================
     # 2. 📐 UJI RELIABILITAS (CRONBACH'S ALPHA)
     # ===============================
