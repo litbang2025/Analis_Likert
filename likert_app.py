@@ -17,16 +17,27 @@ uploaded_file = st.file_uploader("📥 Upload file CSV hasil survei", type=["csv
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
+    likert_df = df.iloc[:, 2:]
+    kolom_likert = likert_df.columns
+
+    # ✅ Fungsi di sini aman untuk semua analisis
+    def interpretasi_skor(skor):
+        if skor > 4:
+            return "Sangat Positif"
+        elif skor > 3:
+            return "Netral Positif"
+        elif skor == 3:
+            return "Netral"
+        elif skor > 2:
+            return "Netral Negatif"
+        else:
+            return "Sangat Negatif"
 
     st.sidebar.header("⚙️ Pilih Analisis")
     analisis_terpilih = st.sidebar.selectbox(
         "Jenis Analisis",
-        ["Visualisasi", "Rata-Rata & Interpretasi", "Uji Reliabilitas", "Korelasi", "Export Excel"]
+        ["Visualisasi", "Rata-Rata & Interpretasi", "Uji Reliabilitas", "Korelasi", "Export Excel", "Export PDF"]
     )
-
-    # Inisialisasi data
-    likert_df = df.iloc[:, 2:]
-    kolom_likert = df.columns[2:]
 
     # --- Visualisasi ---
     if analisis_terpilih == "Visualisasi":
