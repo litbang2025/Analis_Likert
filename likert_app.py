@@ -19,10 +19,25 @@ if uploaded_file:
     
     st.subheader("📋 Data Response")
     st.dataframe(df.head())
+    
+    # --- Analisis Awal ---
+    total_responden = df.shape[0]
+    total_kolom = df.shape[1]
+    kolom_likert = df.columns[2:]
+    jumlah_pertanyaan = len(kolom_likert)
+
+    st.info("ℹ️ Keterangan Awal:")
+    st.write(f"- **Jumlah Responden:** {total_responden}")
+    st.write(f"- **Total Kolom:** {total_kolom}")
+    st.write(f"- **Kolom Pertanyaan (Likert):** {jumlah_pertanyaan} kolom")
+    st.write(f"- **Nama Kolom Pertanyaan:**")
+    st.write(list(kolom_likert))
 
     # Ambil kolom pertanyaan (asumsi kolom ke-3 dst)
     likert_df = df.iloc[:, 2:]
-    
+
+    # Lanjutkan dengan analisis lainnya di bawah sini...
+
     # Fungsi Cronbach Alpha
     def cronbach_alpha(data):
         item_vars = data.var(axis=0, ddof=1)
