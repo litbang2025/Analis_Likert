@@ -36,7 +36,7 @@ if uploaded_file:
     st.sidebar.header("⚙️ Pilih Analisis")
     analisis_terpilih = st.sidebar.selectbox(
         "Jenis Analisis",
-        ["Visualisasi", "Rata-Rata & Interpretasi", "Uji Reliabilitas", "Korelasi", "Export Excel", "Export PDF"]
+        ["Visualisasi", "Rata-Rata & Interpretasi", "Uji Reliabilitas", "Korelasi", "Export Excel"]
     )
 
     # --- Visualisasi ---
@@ -134,25 +134,22 @@ if uploaded_file:
 
     # --- Export Excel ---
     elif analisis_terpilih == "Export Excel":
-        st.subheader("📤 Export Data & Analisis")
+    avg_scores = likert_df.mean()  # pastikan ini Series
+    interpretasi = avg_scores.apply(interpretasi_skor)
 
-        avg_scores = likert_df.mean()
-        interpretasi = avg_scores.apply(lambda x: interpretasi_skor(x))
+    df_export = pd.DataFrame({
+        "Pernyataan": avg_scores.index,
+        "Rata-rata Skor": avg_scores.values,
+        "Interpretasi": interpretasi.values
+    })
 
-        output_df = pd.DataFrame({
-            "Pertanyaan": avg_scores.index,
-            "Rata-Rata Skor": avg_scores.values,
-            "Interpretasi": interpretasi
-        })
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df_export.to_excel(writer, index=False, sheet_name='Interpretasi')
 
-        output = io.BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name="Data Mentah")
-            output_df.to_excel(writer, index=False, sheet_name="Rata-rata & Interpretasi")
-
-        st.download_button(
-            label="📥 Download Laporan Excel",
-            data=output.getvalue(),
-            file_name="laporan_likert.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    st.download_button(
+        label="📥 Download Interpretasi (Excel)",
+        data=output.getvalue(),
+        file_name="interpretasi_likert.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
