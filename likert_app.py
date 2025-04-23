@@ -35,17 +35,26 @@ if uploaded_file:
     # Ambil kolom pertanyaan (asumsi kolom ke-3 dst)
     likert_df = df.iloc[:, 2:]
 
-    st.subheader("📈 Visualisasi Setiap Pertanyaan (Likert Scale)")
+    st.subheader("📈 Visualisasi & Ringkasan Tiap Pertanyaan")
 
-    for kolom in kolom_likert:
-        st.markdown(f"**📌 {kolom}**")
+    for i, kolom in enumerate(kolom_likert, start=1):
+        st.markdown(f"### ❓ Q{i}: {kolom}")
+
+        # Buat grafik batang horizontal
         plt.figure(figsize=(10, 3))
-        order = sorted(likert_df[kolom].dropna().unique())  # urutkan nilai skala
-        sns.countplot(data=likert_df, y=kolom, order=order, palette="Blues_d")
+        order = sorted(likert_df[kolom].dropna().unique())
+        ax = sns.countplot(data=likert_df, y=kolom, order=order, palette="Blues_d")
         plt.xlabel("Jumlah Responden")
         plt.ylabel("Skala")
         st.pyplot(plt)
         plt.clf()
+
+        # Penjelasan otomatis
+        frekuensi = likert_df[kolom].value_counts().sort_values(ascending=False)
+        jawaban_terbanyak = frekuensi.index[0]
+        jumlah_terbanyak = frekuensi.iloc[0]
+        st.success(f"📝 Jawaban paling banyak: **{jawaban_terbanyak}** sebanyak **{jumlah_terbanyak}** responden.")
+
 
     # Lanjutkan dengan analisis lainnya di bawah sini...
 
