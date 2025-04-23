@@ -187,7 +187,13 @@ if uploaded_file:
             st.info("Nilai Cronbach's Alpha yang rendah (≥ 0.5) menunjukkan bahwa instrumen survei Anda mungkin tidak cukup reliabel dan beberapa pertanyaan perlu diperbaiki.")
         else:
             st.info("Nilai Cronbach's Alpha yang sangat rendah (≤ 0.5) menunjukkan bahwa instrumen survei Anda tidak reliabel dan perlu diperbaiki secara signifikan.")
-
+# --- Korelasi ---
+    elif analisis_terpilih == "Korelasi":
+        st.subheader("🔥 Korelasi antar Pertanyaan")
+        fig2, ax2 = plt.subplots(figsize=(10, 6))
+        sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
+        st.pyplot(fig2)
+        
     # --- Export Excel ---
     elif analisis_terpilih == "Export Excel":
         st.subheader("📤 Export Data ke Excel")
