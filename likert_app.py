@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import io
 
 # Setting tampilan
 st.set_page_config(layout="wide")
@@ -13,115 +14,134 @@ st.title("📊 Analisis Skala Likert Profesional")
 
 # Upload File
 uploaded_file = st.file_uploader("📥 Upload file CSV hasil survei", type=["csv"])
+
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
-    
-    st.subheader("📋 Data Response")
-    st.dataframe(df.head())
 
-    # --- Analisis Awal ---
-    total_responden = df.shape[0]
-    total_kolom = df.shape[1]
-    kolom_likert = df.columns[2:]
-    jumlah_pertanyaan = len(kolom_likert)
+    st.sidebar.header("⚙️ Pilih Analisis")
+    analisis_terpilih = st.sidebar.selectbox(
+        "Jenis Analisis",
+        ["Visualisasi", "Rata-Rata & Interpretasi", "Uji Reliabilitas", "Korelasi", "Export Excel"]
+    )
 
-    st.info("ℹ️ Keterangan Awal:")
-    st.write(f"- **Jumlah Responden:** {total_responden}")
-    st.write(f"- **Total Kolom:** {total_kolom}")
-    st.write(f"- **Kolom Pertanyaan (Likert):** {jumlah_pertanyaan} kolom")
-    st.write(f"- **Nama Kolom Pertanyaan:**")
-    st.write(list(kolom_likert))
-
-    # Ambil kolom pertanyaan (asumsi kolom ke-3 dst)
+    # Inisialisasi data
     likert_df = df.iloc[:, 2:]
+    kolom_likert = df.columns[2:]
 
-    st.subheader("📈 Visualisasi & Ringkasan Tiap Pertanyaan")
+    # --- Visualisasi ---
+    if analisis_terpilih == "Visualisasi":
+        st.subheader("📋 Data Response")
+        st.dataframe(df.head())
 
-    for i, kolom in enumerate(kolom_likert, start=1):
-        st.markdown(f"### ❓ Q{i}: {kolom}")
+        total_responden = df.shape[0]
+        st.info(f"📌 Jumlah responden: **{total_responden}**")
+        
+        st.subheader("📈 Visualisasi & Ringkasan Tiap Pertanyaan")
+        for i, kolom in enumerate(kolom_likert, start=1):
+            st.markdown(f"### ❓ Q{i}: {kolom}")
+            plt.figure(figsize=(10, 3))
+            order = sorted(likert_df[kolom].dropna().unique())
+            ax = sns.countplot(data=likert_df, y=kolom, order=order, palette="Blues_d")
+            plt.xlabel("Jumlah Responden")
+            plt.ylabel("Skala")
+            st.pyplot(plt)
+            plt.clf()
 
-        # Buat grafik batang horizontal
-        plt.figure(figsize=(10, 3))
-        order = sorted(likert_df[kolom].dropna().unique())
-        ax = sns.countplot(data=likert_df, y=kolom, order=order, palette="Blues_d")
-        plt.xlabel("Jumlah Responden")
-        plt.ylabel("Skala")
-        st.pyplot(plt)
-        plt.clf()
+            frekuensi = likert_df[kolom].value_counts().sort_values(ascending=False)
+            jawaban_terbanyak = frekuensi.index[0]
+            jumlah_terbanyak = frekuensi.iloc[0]
+            st.success(f"📝 Jawaban paling banyak: **{jawaban_terbanyak}** sebanyak **{jumlah_terbanyak}** responden.")
 
-        # Penjelasan otomatis
-        frekuensi = likert_df[kolom].value_counts().sort_values(ascending=False)
-        jawaban_terbanyak = frekuensi.index[0]
-        jumlah_terbanyak = frekuensi.iloc[0]
-        st.success(f"📝 Jawaban paling banyak: **{jawaban_terbanyak}** sebanyak **{jumlah_terbanyak}** responden.")
+    # --- Rata-rata & Interpretasi ---
+    elif analisis_terpilih == "Rata-Rata & Interpretasi":
+        st.subheader("📊 Rata-Rata Skor & Interpretasi")
+        avg_scores = likert_df.mean()
 
+        def interpretasi_skor(skor):
+            if skor > 4:
+                return "Sangat Positif"
+            elif skor > 3:
+                return "Netral Positif"
+            elif skor == 3:
+                return "Netral"
+            elif skor > 2:
+                return "Netral Negatif"
+            else:
+                return "Sangat Negatif"
 
-    # Lanjutkan dengan analisis lainnya di bawah sini...
+        interpretasi = avg_scores.apply(interpretasi_skor)
 
-    # Fungsi Cronbach Alpha
-    def cronbach_alpha(data):
-        item_vars = data.var(axis=0, ddof=1)
-        total_var = data.sum(axis=1).var(ddof=1)
-        n_items = data.shape[1]
-        return n_items / (n_items - 1) * (1 - item_vars.sum() / total_var)
-    
-    alpha = cronbach_alpha(likert_df)
-    
-    # Interpretasi
-    def interpret_alpha(a):
-        if a >= 0.9:
-            return "Sangat Baik"
-        elif a >= 0.8:
-            return "Baik"
-        elif a >= 0.7:
-            return "Cukup"
-        elif a >= 0.6:
-            return "Kurang"
-        elif a >= 0.5:
-            return "Rendah"
-        else:
-            return "Tidak Dapat Diterima"
+        avg_table = pd.DataFrame({
+            "Pertanyaan": avg_scores.index,
+            "Rata-Rata Skor": avg_scores.values,
+            "Interpretasi": interpretasi
+        }).sort_values(by="Rata-Rata Skor", ascending=False)
 
-    st.subheader("📐 Uji Reliabilitas - Cronbach's Alpha")
-    st.markdown(f"**Cronbach's Alpha: {alpha:.3f}** — {interpret_alpha(alpha)}")
+        st.dataframe(avg_table)
 
-    # Rata-rata per pertanyaan
-    avg_scores = likert_df.mean().sort_values(ascending=False)
+        st.subheader("📈 Grafik Rata-Rata")
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(x=avg_table["Rata-Rata Skor"], y=avg_table["Pertanyaan"], palette='viridis')
+        for i, v in enumerate(avg_table["Rata-Rata Skor"]):
+            ax.text(v + 0.05, i, f"{v:.2f}", color='black', va='center', fontweight='bold')
+        st.pyplot(fig)
 
-    # Tabel Rata-rata
-    st.subheader("📊 Rata-Rata Skor per Pertanyaan")
-    avg_table = pd.DataFrame({
-        "Pertanyaan": avg_scores.index,
-        "Rata-Rata Skor": avg_scores.values
-    })
-    st.dataframe(avg_table)
+    # --- Uji Reliabilitas ---
+    elif analisis_terpilih == "Uji Reliabilitas":
+        st.subheader("📐 Uji Reliabilitas - Cronbach's Alpha")
 
-    # Bar Chart
-    st.subheader("📈 Visualisasi Skor per Pertanyaan")
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.barplot(x=avg_scores.values, y=avg_scores.index, palette='viridis', ax=ax)
-    for i, v in enumerate(avg_scores.values):
-        ax.text(v + 0.05, i, f"{v:.2f}", color='black', va='center', fontweight='bold')
-    st.pyplot(fig)
+        def cronbach_alpha(data):
+            item_vars = data.var(axis=0, ddof=1)
+            total_var = data.sum(axis=1).var(ddof=1)
+            n_items = data.shape[1]
+            return n_items / (n_items - 1) * (1 - item_vars.sum() / total_var)
 
-    # Heatmap korelasi
-    st.subheader("🔥 Korelasi antar Pertanyaan")
-    fig2, ax2 = plt.subplots(figsize=(10, 6))
-    sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
-    st.pyplot(fig2)
+        alpha = cronbach_alpha(likert_df)
 
-    # Misalnya, data hasil uji hipotesis yang sudah dihitung sebelumnya
-    hasil_uji = [
-        ("Pertanyaan 1", 2.3, 0.05, "Signifikan"),
-        ("Pertanyaan 2", 1.2, 0.15, "Tidak Signifikan"),
-        ("Pertanyaan 3", 3.1, 0.01, "Signifikan")
-    ]
+        def interpret_alpha(a):
+            if a >= 0.9:
+                return "Sangat Baik"
+            elif a >= 0.8:
+                return "Baik"
+            elif a >= 0.7:
+                return "Cukup"
+            elif a >= 0.6:
+                return "Kurang"
+            elif a >= 0.5:
+                return "Rendah"
+            else:
+                return "Tidak Dapat Diterima"
 
-    # Menyusun kesimpulan berdasarkan hasil uji hipotesis
-    st.subheader("📌 Kesimpulan Uji Hipotesis:")
-    for item in hasil_uji:
-        pertanyaan, t_stat, p_val, status = item
-        if status == "Signifikan":
-            st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata secara signifikan lebih tinggi dari nilai netral (3).")
-        else:
-            st.write(f"- Pada pertanyaan '{pertanyaan}', hasil uji t menunjukkan bahwa nilai rata-rata tidak signifikan lebih tinggi dari nilai netral (3).")
+        st.markdown(f"**Cronbach's Alpha: {alpha:.3f}** — {interpret_alpha(alpha)}")
+
+    # --- Korelasi ---
+    elif analisis_terpilih == "Korelasi":
+        st.subheader("🔥 Korelasi antar Pertanyaan")
+        fig2, ax2 = plt.subplots(figsize=(10, 6))
+        sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
+        st.pyplot(fig2)
+
+    # --- Export Excel ---
+    elif analisis_terpilih == "Export Excel":
+        st.subheader("📤 Export Data & Analisis")
+
+        avg_scores = likert_df.mean()
+        interpretasi = avg_scores.apply(lambda x: interpretasi_skor(x))
+
+        output_df = pd.DataFrame({
+            "Pertanyaan": avg_scores.index,
+            "Rata-Rata Skor": avg_scores.values,
+            "Interpretasi": interpretasi
+        })
+
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name="Data Mentah")
+            output_df.to_excel(writer, index=False, sheet_name="Rata-rata & Interpretasi")
+
+        st.download_button(
+            label="📥 Download Laporan Excel",
+            data=output.getvalue(),
+            file_name="laporan_likert.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
