@@ -30,8 +30,18 @@ if uploaded_file:
     st.write(f"- **Jumlah Responden:** {total_responden}")
     st.write(f"- **Total Kolom:** {total_kolom}")
     st.write(f"- **Kolom Pertanyaan (Likert):** {jumlah_pertanyaan} kolom")
-    st.write(f"- **Nama Kolom Pertanyaan:**")
-    st.write(list(kolom_likert))
+
+     st.subheader("📈 Visualisasi Setiap Pertanyaan (Likert Scale)")
+
+    for kolom in kolom_likert:
+        st.markdown(f"**📌 {kolom}**")
+        plt.figure(figsize=(10, 3))
+        order = sorted(likert_df[kolom].dropna().unique())  # urutkan nilai skala
+        sns.countplot(data=likert_df, y=kolom, order=order, palette="Blues_d")
+        plt.xlabel("Jumlah Responden")
+        plt.ylabel("Skala")
+        st.pyplot(plt)
+        plt.clf()
 
     # Ambil kolom pertanyaan (asumsi kolom ke-3 dst)
     likert_df = df.iloc[:, 2:]
