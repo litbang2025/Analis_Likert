@@ -1,7 +1,6 @@
 # file: likert_app.py
 import streamlit as st
 import pandas as pd
-import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -19,7 +18,7 @@ if uploaded_file:
     
     st.subheader("📋 Data Response")
     st.dataframe(df.head())
-    
+
     # --- Analisis Awal ---
     total_responden = df.shape[0]
     total_kolom = df.shape[1]
@@ -30,8 +29,13 @@ if uploaded_file:
     st.write(f"- **Jumlah Responden:** {total_responden}")
     st.write(f"- **Total Kolom:** {total_kolom}")
     st.write(f"- **Kolom Pertanyaan (Likert):** {jumlah_pertanyaan} kolom")
+    st.write(f"- **Nama Kolom Pertanyaan:**")
+    st.write(list(kolom_likert))
 
-     st.subheader("📈 Visualisasi Setiap Pertanyaan (Likert Scale)")
+    # Ambil kolom pertanyaan (asumsi kolom ke-3 dst)
+    likert_df = df.iloc[:, 2:]
+
+    st.subheader("📈 Visualisasi Setiap Pertanyaan (Likert Scale)")
 
     for kolom in kolom_likert:
         st.markdown(f"**📌 {kolom}**")
@@ -42,9 +46,6 @@ if uploaded_file:
         plt.ylabel("Skala")
         st.pyplot(plt)
         plt.clf()
-
-    # Ambil kolom pertanyaan (asumsi kolom ke-3 dst)
-    likert_df = df.iloc[:, 2:]
 
     # Lanjutkan dengan analisis lainnya di bawah sini...
 
