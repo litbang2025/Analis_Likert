@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import io
+from io import BytesIO
 
 # Setting tampilan
 st.set_page_config(layout="wide")
@@ -17,10 +17,10 @@ uploaded_file = st.file_uploader("📥 Upload file CSV hasil survei", type=["csv
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file)
-    likert_df = df.iloc[:, 2:]
+    likert_df = df.iloc[:, 2:]  # Ambil kolom dari kolom ke-3 ke kanan (index 2+)
     kolom_likert = likert_df.columns
 
-    # ✅ Fungsi di sini aman untuk semua analisis
+    # ✅ Fungsi interpretasi
     def interpretasi_skor(skor):
         if skor > 4:
             return "Sangat Positif"
@@ -33,6 +33,7 @@ if uploaded_file:
         else:
             return "Sangat Negatif"
 
+    # Sidebar
     st.sidebar.header("⚙️ Pilih Analisis")
     analisis_terpilih = st.sidebar.selectbox(
         "Jenis Analisis",
@@ -43,16 +44,14 @@ if uploaded_file:
     if analisis_terpilih == "Visualisasi":
         st.subheader("📋 Data Response")
         st.dataframe(df.head())
+        st.info(f"📌 Jumlah responden: **{df.shape[0]}**")
 
-        total_responden = df.shape[0]
-        st.info(f"📌 Jumlah responden: **{total_responden}**")
-        
         st.subheader("📈 Visualisasi & Ringkasan Tiap Pertanyaan")
         for i, kolom in enumerate(kolom_likert, start=1):
             st.markdown(f"### ❓ Q{i}: {kolom}")
             plt.figure(figsize=(10, 3))
             order = sorted(likert_df[kolom].dropna().unique())
-            ax = sns.countplot(data=likert_df, y=kolom, order=order, palette="Blues_d")
+            sns.countplot(data=likert_df, y=kolom, order=order, palette="Blues_d")
             plt.xlabel("Jumlah Responden")
             plt.ylabel("Skala")
             st.pyplot(plt)
@@ -63,23 +62,10 @@ if uploaded_file:
             jumlah_terbanyak = frekuensi.iloc[0]
             st.success(f"📝 Jawaban paling banyak: **{jawaban_terbanyak}** sebanyak **{jumlah_terbanyak}** responden.")
 
-    # --- Rata-rata & Interpretasi ---
+    # --- Rata-Rata & Interpretasi ---
     elif analisis_terpilih == "Rata-Rata & Interpretasi":
         st.subheader("📊 Rata-Rata Skor & Interpretasi")
         avg_scores = likert_df.mean()
-
-        def interpretasi_skor(skor):
-            if skor > 4:
-                return "Sangat Positif"
-            elif skor > 3:
-                return "Netral Positif"
-            elif skor == 3:
-                return "Netral"
-            elif skor > 2:
-                return "Netral Negatif"
-            else:
-                return "Sangat Negatif"
-
         interpretasi = avg_scores.apply(interpretasi_skor)
 
         avg_table = pd.DataFrame({
@@ -134,22 +120,24 @@ if uploaded_file:
 
     # --- Export Excel ---
     elif analisis_terpilih == "Export Excel":
-    avg_scores = likert_df.mean()  # pastikan ini Series
-    interpretasi = avg_scores.apply(interpretasi_skor)
+        st.subheader("📤 Export Interpretasi ke Excel")
 
-    df_export = pd.DataFrame({
-        "Pernyataan": avg_scores.index,
-        "Rata-rata Skor": avg_scores.values,
-        "Interpretasi": interpretasi.values
-    })
+        avg_scores = likert_df.mean()
+        interpretasi = avg_scores.apply(interpretasi_skor)
 
-    output = BytesIO()
-    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df_export.to_excel(writer, index=False, sheet_name='Interpretasi')
+        df_export = pd.DataFrame({
+            "Pernyataan": avg_scores.index,
+            "Rata-rata Skor": avg_scores.values,
+            "Interpretasi": interpretasi.values
+        })
 
-    st.download_button(
-        label="📥 Download Interpretasi (Excel)",
-        data=output.getvalue(),
-        file_name="interpretasi_likert.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df_export.to_excel(writer, index=False, sheet_name='Interpretasi')
+
+        st.download_button(
+            label="📥 Download Interpretasi (Excel)",
+            data=output.getvalue(),
+            file_name="interpretasi_likert.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
