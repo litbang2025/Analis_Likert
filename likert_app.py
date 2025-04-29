@@ -3,6 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from io import BytesIO
+from scipy.stats import shapiro, kstest, norm, probplot
 
 # Setting tampilan
 st.set_page_config(layout="wide")
@@ -19,7 +20,7 @@ if uploaded_file:
     likert_df = df.iloc[:, 2:]  # Ambil kolom dari kolom ke-3 ke kanan (index 2+)
     kolom_likert = likert_df.columns
 
-    # ✅ Fungsi interpretasi
+    # ✅ Fungsi interpretasi skor
     def interpretasi_skor(skor):
         if skor > 4:
             return "Sangat Positif"
@@ -36,7 +37,7 @@ if uploaded_file:
     st.sidebar.header("⚙️ Pilih Analisis")
     analisis_terpilih = st.sidebar.selectbox(
         "Jenis Analisis",
-        ["Visualisasi", "Rata-Rata & Interpretasi", "Uji Reliabilitas", "Korelasi", "Export Excel"]
+        ["Visualisasi", "Rata-Rata & Interpretasi", "Uji Reliabilitas", "Korelasi", "Uji Normalitas", "Export Excel"]
     )
 
     # --- Visualisasi ---
@@ -97,53 +98,35 @@ if uploaded_file:
         st.subheader("📊 3 Pertanyaan dengan Skor Pertengahan")
         st.dataframe(median_scores)
 
-        # Menambahkan interpretasi untuk setiap kategori
-        lowest_scores_interpretation = pd.DataFrame({
-            "Pertanyaan": lowest_scores.index,
-            "Skor Rata-rata": lowest_scores.values,
-            "Interpretasi": [interpretasi_skor(s) for s in lowest_scores.values]
-        })
+        # Interpretasi
+        def buat_interpretasi(scores):
+            return pd.DataFrame({
+                "Pertanyaan": scores.index,
+                "Skor Rata-rata": scores.values,
+                "Interpretasi": [interpretasi_skor(s) for s in scores.values]
+            })
 
-        highest_scores_interpretation = pd.DataFrame({
-            "Pertanyaan": highest_scores.index,
-            "Skor Rata-rata": highest_scores.values,
-            "Interpretasi": [interpretasi_skor(s) for s in highest_scores.values]
-        })
-
-        median_scores_interpretation = pd.DataFrame({
-            "Pertanyaan": median_scores.index,
-            "Skor Rata-rata": median_scores.values,
-            "Interpretasi": [interpretasi_skor(s) for s in median_scores.values]
-        })
-
-        # Menampilkan interpretasi
         st.subheader("📝 Interpretasi Pertanyaan dengan Skor Terendah")
-        st.dataframe(lowest_scores_interpretation)
+        st.dataframe(buat_interpretasi(lowest_scores))
 
         st.subheader("📝 Interpretasi Pertanyaan dengan Skor Tertinggi")
-        st.dataframe(highest_scores_interpretation)
+        st.dataframe(buat_interpretasi(highest_scores))
 
         st.subheader("📝 Interpretasi Pertanyaan dengan Skor Pertengahan")
-        st.dataframe(median_scores_interpretation)
+        st.dataframe(buat_interpretasi(median_scores))
 
         # Grafik perbandingan skor
         fig, ax = plt.subplots(figsize=(12, 6))
-
-        # Gabungkan ketiganya
         combined_scores = pd.concat([lowest_scores, highest_scores, median_scores])
-        labels = list(lowest_scores.index) + list(highest_scores.index) + list(median_scores.index)
-        values = list(lowest_scores.values) + list(highest_scores.values) + list(median_scores.values)
+        labels = list(combined_scores.index)
+        values = list(combined_scores.values)
 
-        # Plotting
-        sns.barplot(x=combined_scores.index, y=values, palette='coolwarm', ax=ax)
-
-        # Menambah label
+        sns.barplot(x=labels, y=values, palette='coolwarm', ax=ax)
         ax.set_xticklabels(labels, rotation=45, ha="right")
         ax.set_xlabel('Pertanyaan')
         ax.set_ylabel('Skor Rata-rata')
         ax.set_title('Perbandingan Skor Terendah, Pertengahan & Tertinggi')
 
-        # Menampilkan grafik
         st.pyplot(fig)
 
     # --- Uji Reliabilitas ---
@@ -174,37 +157,60 @@ if uploaded_file:
 
         st.markdown(f"**Cronbach's Alpha: {alpha:.3f}** — {interpret_alpha(alpha)}")
 
-        # Penjelasan tentang Cronbach's Alpha
-        if alpha >= 0.9:
-            st.info("Nilai Cronbach's Alpha yang tinggi (≥ 0.9) menunjukkan bahwa instrumen survei Anda memiliki reliabilitas yang sangat baik. Artinya, pertanyaan-pertanyaan dalam survei ini sangat konsisten dan saling mendukung dalam mengukur konstruk yang sama.")
-        elif alpha >= 0.8:
-            st.info("Nilai Cronbach's Alpha yang baik (≥ 0.8) menunjukkan bahwa instrumen survei Anda memiliki reliabilitas yang cukup baik, meskipun masih ada sedikit variasi dalam konsistensi antar item.")
-        elif alpha >= 0.7:
-            st.info("Nilai Cronbach's Alpha yang cukup (≥ 0.7) menunjukkan bahwa instrumen survei Anda memiliki reliabilitas yang dapat diterima, namun masih ada ruang untuk meningkatkan konsistensi antar item.")
-        elif alpha >= 0.6:
-            st.info("Nilai Cronbach's Alpha yang kurang (≥ 0.6) menunjukkan bahwa instrumen survei Anda mungkin memiliki reliabilitas yang rendah, dan beberapa pertanyaan mungkin tidak konsisten dalam mengukur konstruk yang sama.")
-        elif alpha >= 0.5:
-            st.info("Nilai Cronbach's Alpha yang rendah (≥ 0.5) menunjukkan bahwa instrumen survei Anda mungkin tidak cukup reliabel dan beberapa pertanyaan perlu diperbaiki.")
-        else:
-            st.info("Nilai Cronbach's Alpha yang sangat rendah (≤ 0.5) menunjukkan bahwa instrumen survei Anda tidak reliabel dan perlu diperbaiki secara signifikan.")
-# --- Korelasi ---
+    # --- Korelasi ---
     elif analisis_terpilih == "Korelasi":
         st.subheader("🔥 Korelasi antar Pertanyaan")
         fig2, ax2 = plt.subplots(figsize=(10, 6))
         sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
         st.pyplot(fig2)
-        
+
+    # --- Uji Normalitas ---
+    elif analisis_terpilih == "Uji Normalitas":
+        st.subheader("🧪 Uji Normalitas Data")
+
+        n = df.shape[0]
+        st.info(f"📌 Jumlah responden: **{n}**")
+
+        # Pilih metode otomatis
+        skor_total = likert_df.mean(axis=1)
+
+        if n <= 50:
+            st.write("🔎 Metode: **Shapiro-Wilk Test** (n ≤ 50)")
+            stat, p = shapiro(skor_total)
+        else:
+            st.write("🔎 Metode: **Kolmogorov-Smirnov Test** (n > 50)")
+            stat, p = kstest(skor_total, 'norm', args=(skor_total.mean(), skor_total.std()))
+
+        st.write(f"**Statistik Uji:** {stat:.4f}")
+        st.write(f"**p-value:** {p:.4f}")
+
+        if p > 0.05:
+            st.success("✅ Data terdistribusi normal (p > 0.05)")
+        else:
+            st.error("❌ Data tidak terdistribusi normal (p ≤ 0.05)")
+
+        # Tambahkan QQ-Plot
+        st.subheader("📈 Visualisasi QQ-Plot")
+        fig, ax = plt.subplots(figsize=(6, 6))
+        probplot(skor_total, dist="norm", plot=ax)
+        st.pyplot(fig)
+
     # --- Export Excel ---
     elif analisis_terpilih == "Export Excel":
         st.subheader("📤 Export Data ke Excel")
-        @st.cache
+
+        @st.cache_data
         def convert_df(df):
-            return df.to_excel(index=False)
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df.to_excel(writer, index=False, sheet_name='Data')
+            output.seek(0)
+            return output
 
         excel_file = convert_df(df)
         st.download_button(
-            label="Download Data CSV",
+            label="Download Data Excel",
             data=excel_file,
             file_name="data_survei.xlsx",
-            mime="application/vnd.ms-excel"
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
