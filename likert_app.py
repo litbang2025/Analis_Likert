@@ -194,10 +194,28 @@ if uploaded_file:
         st.write(f"**Statistik Uji:** {stat:.4f}")
         st.write(f"**p-value:** {p:.4f}")
 
-        if p > 0.05:
+                if p > 0.05:
             st.success("✅ Data terdistribusi normal (p > 0.05)")
+            st.info("✅ Data cocok untuk analisis parametrik seperti ANOVA atau regresi.")
         else:
             st.error("❌ Data tidak terdistribusi normal (p ≤ 0.05)")
+            st.warning("👉 Disarankan melanjutkan dengan uji non-parametrik.")
+            
+            # Rekomendasi Uji Lanjut Non-parametrik
+            st.subheader("🧭 Rekomendasi Uji Non-parametrik")
+            st.markdown("""
+            Karena data tidak berdistribusi normal, Anda dapat mempertimbangkan:
+            - **Uji Kruskal-Wallis**: jika ingin membandingkan skor antar kelompok (misalnya berdasarkan gender atau kelas).
+            - **Uji Mann-Whitney U**: jika hanya dua kelompok yang dibandingkan.
+            - **Analisis deskriptif**: seperti median, IQR, dan boxplot.
+            """)
+
+            # Tambahan: visualisasi distribusi
+            st.subheader("📊 Distribusi Skor Total")
+            fig3, ax3 = plt.subplots(figsize=(8, 4))
+            sns.histplot(skor_total, kde=True, bins=20, color="salmon", ax=ax3)
+            ax3.set_title("Distribusi Skor Total Responden")
+            st.pyplot(fig3)
 
         # Tambahkan QQ-Plot
         st.subheader("📈 Visualisasi QQ-Plot")
