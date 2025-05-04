@@ -234,7 +234,7 @@ elif analisis_terpilih == "Uji Normalitas":
         st.pyplot(fig4)
 
     # --- Export Excel ---
-    elif analisis_terpilih == "Export Excel":
+  elif analisis_terpilih == "Export Excel":
         st.subheader("📤 Export Data ke Excel")
 
         @st.cache_data
