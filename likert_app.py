@@ -10,7 +10,17 @@ st.set_page_config(layout="wide")
 sns.set(style="whitegrid")
 
 # Judul Aplikasi
-st.title("📊 Analisis Skala Likert Profesional")
+st.title("📊 Tool Analisis Skala Likert")
+
+# Instruksi
+st.markdown("""
+**Petunjuk:**
+- Pastikan file CSV memiliki format sebagai berikut:
+  - Kolom A: Email
+  - Kolom B: Nama
+  - Kolom C dan seterusnya: Pertanyaan survei (Q1, Q2, Q3, dst.)
+- Kolom pertanyaan **dimulai dari kolom C**, artinya aplikasi ini akan membaca kolom ke-3 dan seterusnya sebagai data skala Likert.
+""")
 
 # Upload File
 uploaded_file = st.file_uploader("📥 Upload file CSV hasil survei", type=["csv"])
@@ -19,6 +29,9 @@ if uploaded_file:
     df = pd.read_csv(uploaded_file)
     likert_df = df.iloc[:, 2:]  # Ambil kolom dari kolom ke-3 ke kanan (index 2+)
     kolom_likert = likert_df.columns
+st.success("✅ File berhasil diunggah dan data pertanyaan berhasil diambil.")
+    st.write("Kolom pertanyaan yang terdeteksi:")
+    st.write(kolom_likert)
 
     # ✅ Fungsi interpretasi skor
     def interpretasi_skor(skor):
