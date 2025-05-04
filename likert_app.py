@@ -194,7 +194,7 @@ if uploaded_file:
         st.write(f"**Statistik Uji:** {stat:.4f}")
         st.write(f"**p-value:** {p:.4f}")
 
-                if p > 0.05:
+        if p > 0.05:
             st.success("✅ Data terdistribusi normal (p > 0.05)")
             st.info("✅ Data cocok untuk analisis parametrik seperti ANOVA atau regresi.")
         else:
