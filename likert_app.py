@@ -174,81 +174,81 @@ if uploaded_file:
         sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
         st.pyplot(fig2)
 
-    # --- Uji Normalitas ---
-elif analisis_terpilih == "Uji Normalitas":
-    st.subheader("🧪 Uji Normalitas Data")
-
-    n = df.shape[0]
-    st.info(f"📌 Jumlah responden: **{n}**")
-
-    # Hitung skor total setiap responden
-    skor_total = likert_df.mean(axis=1)
-
-    # Tampilkan statistik deskriptif ringkas
-    st.write(f"**Rata-rata Skor:** {skor_total.mean():.2f}")
-    st.write(f"**Median Skor:** {skor_total.median():.2f}")
-
-    # Pilih metode uji normalitas
-    if n <= 50:
-        st.write("🔎 Metode: **Shapiro-Wilk Test** (n ≤ 50)")
-        stat, p = shapiro(skor_total)
-    else:
-        st.write("🔎 Metode: **Kolmogorov-Smirnov Test** (n > 50)")
-        stat, p = kstest(skor_total, 'norm', args=(skor_total.mean(), skor_total.std()))
-
-    # Tampilkan hasil uji
-    st.write(f"**Statistik Uji:** {stat:.4f}")
-    st.write(f"**p-value:** {p:.4f}")
-
-    # Interpretasi hasil
-    if p > 0.05:
-        st.success("✅ Data terdistribusi normal (p > 0.05)")
-        st.info("✅ Data cocok untuk analisis parametrik seperti ANOVA atau regresi.")
-    else:
-        st.error("❌ Data tidak terdistribusi normal (p ≤ 0.05)")
-        st.warning("👉 Disarankan melanjutkan dengan uji non-parametrik.")
-
-        # Rekomendasi uji non-parametrik
-        st.subheader("🧭 Rekomendasi Uji Non-parametrik")
-        st.markdown("""
-        Karena data tidak berdistribusi normal, Anda dapat mempertimbangkan:
-        - **Uji Kruskal-Wallis**: untuk membandingkan skor antar lebih dari dua kelompok.
-        - **Uji Mann-Whitney U**: untuk membandingkan dua kelompok.
-        - **Analisis deskriptif**: seperti median, IQR, dan boxplot.
-        """)
-
-    # Visualisasi distribusi skor total
-    st.subheader("📊 Distribusi Skor Total")
-    fig3, ax3 = plt.subplots(figsize=(8, 4))
-    sns.histplot(skor_total, kde=True, bins=20, color="salmon", ax=ax3)
-    ax3.set_title("Distribusi Skor Total Responden")
-    ax3.set_xlabel("Skor Total")
-    ax3.set_ylabel("Jumlah Responden")
-    st.pyplot(fig3)
-
-    # QQ-Plot untuk semua kasus
-    st.subheader("📈 Visualisasi QQ-Plot")
-    fig4, ax4 = plt.subplots(figsize=(6, 6))
-    probplot(skor_total, dist="norm", plot=ax4)
-    ax4.set_title("QQ-Plot Skor Total")
-    st.pyplot(fig4)
-
-# --- Export Excel ---
-elif analisis_terpilih == "Export Excel":
-    st.subheader("📤 Export Data ke Excel")
-
-    @st.cache_data
-    def convert_df(df):
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-              df.to_excel(writer, index=False, sheet_name='Data')
-        output.seek(0)
-        return output
-
-    excel_file = convert_df(df)
-    st.download_button(
-        label="Download Data Excel",
-        data=excel_file,
-        file_name="data_survei.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
+        # --- Uji Normalitas ---
+    elif analisis_terpilih == "Uji Normalitas":
+        st.subheader("🧪 Uji Normalitas Data")
+    
+        n = df.shape[0]
+        st.info(f"📌 Jumlah responden: **{n}**")
+    
+        # Hitung skor total setiap responden
+        skor_total = likert_df.mean(axis=1)
+    
+        # Tampilkan statistik deskriptif ringkas
+        st.write(f"**Rata-rata Skor:** {skor_total.mean():.2f}")
+        st.write(f"**Median Skor:** {skor_total.median():.2f}")
+    
+        # Pilih metode uji normalitas
+        if n <= 50:
+            st.write("🔎 Metode: **Shapiro-Wilk Test** (n ≤ 50)")
+            stat, p = shapiro(skor_total)
+        else:
+            st.write("🔎 Metode: **Kolmogorov-Smirnov Test** (n > 50)")
+            stat, p = kstest(skor_total, 'norm', args=(skor_total.mean(), skor_total.std()))
+    
+        # Tampilkan hasil uji
+        st.write(f"**Statistik Uji:** {stat:.4f}")
+        st.write(f"**p-value:** {p:.4f}")
+    
+        # Interpretasi hasil
+        if p > 0.05:
+            st.success("✅ Data terdistribusi normal (p > 0.05)")
+            st.info("✅ Data cocok untuk analisis parametrik seperti ANOVA atau regresi.")
+        else:
+            st.error("❌ Data tidak terdistribusi normal (p ≤ 0.05)")
+            st.warning("👉 Disarankan melanjutkan dengan uji non-parametrik.")
+    
+            # Rekomendasi uji non-parametrik
+            st.subheader("🧭 Rekomendasi Uji Non-parametrik")
+            st.markdown("""
+            Karena data tidak berdistribusi normal, Anda dapat mempertimbangkan:
+            - **Uji Kruskal-Wallis**: untuk membandingkan skor antar lebih dari dua kelompok.
+            - **Uji Mann-Whitney U**: untuk membandingkan dua kelompok.
+            - **Analisis deskriptif**: seperti median, IQR, dan boxplot.
+            """)
+    
+        # Visualisasi distribusi skor total
+        st.subheader("📊 Distribusi Skor Total")
+        fig3, ax3 = plt.subplots(figsize=(8, 4))
+        sns.histplot(skor_total, kde=True, bins=20, color="salmon", ax=ax3)
+        ax3.set_title("Distribusi Skor Total Responden")
+        ax3.set_xlabel("Skor Total")
+        ax3.set_ylabel("Jumlah Responden")
+        st.pyplot(fig3)
+    
+        # QQ-Plot untuk semua kasus
+        st.subheader("📈 Visualisasi QQ-Plot")
+        fig4, ax4 = plt.subplots(figsize=(6, 6))
+        probplot(skor_total, dist="norm", plot=ax4)
+        ax4.set_title("QQ-Plot Skor Total")
+        st.pyplot(fig4)
+    
+    # --- Export Excel ---
+    elif analisis_terpilih == "Export Excel":
+        st.subheader("📤 Export Data ke Excel")
+    
+        @st.cache_data
+        def convert_df(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                  df.to_excel(writer, index=False, sheet_name='Data')
+            output.seek(0)
+            return output
+    
+        excel_file = convert_df(df)
+        st.download_button(
+            label="Download Data Excel",
+            data=excel_file,
+            file_name="data_survei.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
