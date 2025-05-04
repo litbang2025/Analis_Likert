@@ -239,11 +239,11 @@ elif analisis_terpilih == "Export Excel":
 
     @st.cache_data
     def convert_df(df):
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name='Data')
-        output.seek(0)
-        return output
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+    df.to_excel(writer, index=False, sheet_name='Data')
+    output.seek(0)
+      return output
 
     excel_file = convert_df(df)
     st.download_button(
