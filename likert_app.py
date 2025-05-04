@@ -217,39 +217,38 @@ elif analisis_terpilih == "Uji Normalitas":
         - **Analisis deskriptif**: seperti median, IQR, dan boxplot.
         """)
 
-        # Visualisasi distribusi skor total
-        st.subheader("📊 Distribusi Skor Total")
-        fig3, ax3 = plt.subplots(figsize=(8, 4))
-        sns.histplot(skor_total, kde=True, bins=20, color="salmon", ax=ax3)
-        ax3.set_title("Distribusi Skor Total Responden")
-        ax3.set_xlabel("Skor Total")
-        ax3.set_ylabel("Jumlah Responden")
-        st.pyplot(fig3)
+    # Visualisasi distribusi skor total
+    st.subheader("📊 Distribusi Skor Total")
+    fig3, ax3 = plt.subplots(figsize=(8, 4))
+    sns.histplot(skor_total, kde=True, bins=20, color="salmon", ax=ax3)
+    ax3.set_title("Distribusi Skor Total Responden")
+    ax3.set_xlabel("Skor Total")
+    ax3.set_ylabel("Jumlah Responden")
+    st.pyplot(fig3)
 
-        # QQ-Plot untuk semua kasus
-        st.subheader("📈 Visualisasi QQ-Plot")
-        fig4, ax4 = plt.subplots(figsize=(6, 6))
-        probplot(skor_total, dist="norm", plot=ax4)
-        ax4.set_title("QQ-Plot Skor Total")
-        st.pyplot(fig4)
+    # QQ-Plot untuk semua kasus
+    st.subheader("📈 Visualisasi QQ-Plot")
+    fig4, ax4 = plt.subplots(figsize=(6, 6))
+    probplot(skor_total, dist="norm", plot=ax4)
+    ax4.set_title("QQ-Plot Skor Total")
+    st.pyplot(fig4)
 
-
-    # --- Export Excel ---
+# --- Export Excel ---
 elif analisis_terpilih == "Export Excel":
     st.subheader("📤 Export Data ke Excel")
 
     @st.cache_data
     def convert_df(df):
         output = BytesIO()
-          with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                df.to_excel(writer, index=False, sheet_name='Data')
-            output.seek(0)
-            return output
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False, sheet_name='Data')
+        output.seek(0)
+        return output
 
-        excel_file = convert_df(df)
-        st.download_button(
-            label="Download Data Excel",
-            data=excel_file,
-            file_name="data_survei.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    excel_file = convert_df(df)
+    st.download_button(
+        label="Download Data Excel",
+        data=excel_file,
+        file_name="data_survei.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
