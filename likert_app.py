@@ -29,9 +29,6 @@ if uploaded_file:
     df = pd.read_csv(uploaded_file)
     likert_df = df.iloc[:, 2:]  # Ambil kolom dari kolom ke-3 ke kanan (index 2+)
     kolom_likert = likert_df.columns
-st.success("✅ File berhasil diunggah dan data pertanyaan berhasil diambil.")
-    st.write("Kolom pertanyaan yang terdeteksi:")
-    st.write(kolom_likert)
 
     # ✅ Fungsi interpretasi skor
     def interpretasi_skor(skor):
