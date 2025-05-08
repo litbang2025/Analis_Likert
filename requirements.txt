@@ -6,5 +6,5 @@ matplotlib
 scipy
 xlsxwriter
 scikit-posthocs
-plotly.express as px
+plotly
 
