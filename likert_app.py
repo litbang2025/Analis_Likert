@@ -335,49 +335,49 @@ elif analisis_terpilih == "Uji Lanjutan":
             else:
                 st.warning("⚠️ Kolom kategori harus memiliki minimal tiga kelompok untuk Uji Kruskal-Wallis.")
 
-           # Visualisasi Boxplot
-            st.subheader(f"📦 Boxplot Skor Total per '{kolom_kategori}'")
-            fig6, ax6 = plt.subplots(figsize=(10, 6))
-            sns.boxplot(x=kolom_kategori, y="Skor_Total", data=df_kruskal, palette="Set2", ax=ax6)
-            ax6.set_title(f"Boxplot Skor Total berdasarkan {kolom_kategori}", fontsize=14)
-            ax6.set_xlabel(kolom_kategori, fontsize=12)
-            ax6.set_ylabel("Skor Total", fontsize=12)
-            ax6.tick_params(axis='x', rotation=45)
-            st.pyplot(fig6)
-            
-            # Visualisasi distribusi skor total
-            st.subheader("📊 Distribusi Skor Total")
-            fig3, ax3 = plt.subplots(figsize=(10, 4))
-            sns.histplot(skor_total, kde=True, bins=20, color="salmon", ax=ax3)
-            ax3.set_title("Distribusi Skor Total Responden", fontsize=14)
-            ax3.set_xlabel("Skor Total", fontsize=12)
-            ax3.set_ylabel("Jumlah Responden", fontsize=12)
-            st.pyplot(fig3)
-            
-            # QQ-Plot untuk semua kasus
-            st.subheader("📈 Visualisasi QQ-Plot")
-            fig4, ax4 = plt.subplots(figsize=(6, 6))
-            probplot(skor_total, dist="norm", plot=ax4)
-            ax4.set_title("QQ-Plot Skor Total", fontsize=14)
-            st.pyplot(fig4)
+             # Visualisasi Boxplot
+              st.subheader(f"📦 Boxplot Skor Total per '{kolom_kategori}'")
+              fig6, ax6 = plt.subplots(figsize=(10, 6))
+              sns.boxplot(x=kolom_kategori, y="Skor_Total", data=df_kruskal, palette="Set2", ax=ax6)
+              ax6.set_title(f"Boxplot Skor Total berdasarkan {kolom_kategori}", fontsize=14)
+              ax6.set_xlabel(kolom_kategori, fontsize=12)
+              ax6.set_ylabel("Skor Total", fontsize=12)
+              ax6.tick_params(axis='x', rotation=45)
+              st.pyplot(fig6)
+              
+              # Visualisasi distribusi skor total
+              st.subheader("📊 Distribusi Skor Total")
+              fig3, ax3 = plt.subplots(figsize=(10, 4))
+              sns.histplot(skor_total, kde=True, bins=20, color="salmon", ax=ax3)
+              ax3.set_title("Distribusi Skor Total Responden", fontsize=14)
+              ax3.set_xlabel("Skor Total", fontsize=12)
+              ax3.set_ylabel("Jumlah Responden", fontsize=12)
+              st.pyplot(fig3)
+              
+              # QQ-Plot untuk semua kasus
+              st.subheader("📈 Visualisasi QQ-Plot")
+              fig4, ax4 = plt.subplots(figsize=(6, 6))
+              probplot(skor_total, dist="norm", plot=ax4)
+              ax4.set_title("QQ-Plot Skor Total", fontsize=14)
+              st.pyplot(fig4)
 
-  # --- Export Excel ---
-    elif analisis_terpilih == "Export Excel":
-        st.subheader("📤 Export Data ke Excel")
-    
-        @st.cache_data
-        def convert_df(df):
-            output = BytesIO()
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                  df.to_excel(writer, index=False, sheet_name='Data')
-            output.seek(0)
-            return output
-    
-        excel_file = convert_df(df)
-        st.download_button(
-            label="Download Data Excel",
-            data=excel_file,
-            file_name="data_survei.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-      
+# --- Export Excel ---
+elif analisis_terpilih == "Export Excel":
+    st.subheader("📤 Export Data ke Excel")
+
+    @st.cache_data
+    def convert_df(df):
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+              df.to_excel(writer, index=False, sheet_name='Data')
+        output.seek(0)
+        return output
+
+    excel_file = convert_df(df)
+    st.download_button(
+        label="Download Data Excel",
+        data=excel_file,
+        file_name="data_survei.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+  
