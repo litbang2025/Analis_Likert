@@ -4,6 +4,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import plotly.express as px
 from io import BytesIO
+from scipy.stats import kruskal
 from scipy.stats import shapiro, kstest, norm, probplot
 
 # Setting tampilan
