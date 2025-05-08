@@ -47,7 +47,7 @@ if uploaded_file:
     st.sidebar.header("⚙️ Pilih Analisis")
     analisis_terpilih = st.sidebar.selectbox(
         "Jenis Analisis",
-        ["Visualisasi", "Rata-Rata & Interpretasi", "Uji Reliabilitas", "Korelasi", "Uji Normalitas"]
+        ["Visualisasi", "Rata-Rata & Interpretasi", "Uji Reliabilitas", "Korelasi", "Uji Normalitas","Uji Lanjutan","Export Excel"]
     )
 
     # --- Visualisasi ---
