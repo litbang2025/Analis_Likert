@@ -224,34 +224,34 @@ if uploaded_file:
             
 
     elif analisis_terpilih == "Uji Lanjutan":
-    st.subheader("🔬 Uji Lanjutan")
-
-    # Coba ambil skor_total dari session_state, atau hitung jika belum ada
-    if "skor_total" not in st.session_state:
-        try:
-            skor_total = likert_df.mean(axis=1)
-            st.session_state["skor_total"] = skor_total
-            st.info("ℹ️ Skor total dihitung otomatis karena belum tersedia.")
-        except:
-            st.error("❌ Data belum tersedia. Pastikan data Likert valid dan lakukan Uji Normalitas terlebih dahulu.")
-            st.stop()
-    else:
-        skor_total = st.session_state["skor_total"]
-
-    st.markdown("Fitur ini menampilkan analisis tambahan seperti uji homogenitas, uji beda, regresi sederhana, serta visualisasi distribusi data.")
-
-    # Penjelasan Skewness dan Kurtosis
-    st.caption("""
-    ℹ️ *Skewness* > 0 menunjukkan kemencengan ke kanan, < 0 ke kiri.
-    *Kurtosis* tinggi menunjukkan ekor yang lebih berat dari distribusi normal.
-    """)
-
-    # Boxplot Skor Total
-    st.subheader("📦 Boxplot Skor Total")
-    fig_box, ax_box = plt.subplots()
-    sns.boxplot(x=skor_total, color="lightblue", ax=ax_box)
-    ax_box.set_title("Boxplot Skor Total")
-    st.pyplot(fig_box)
+            st.subheader("🔬 Uji Lanjutan")
+        
+            # Coba ambil skor_total dari session_state, atau hitung jika belum ada
+            if "skor_total" not in st.session_state:
+                try:
+                    skor_total = likert_df.mean(axis=1)
+                    st.session_state["skor_total"] = skor_total
+                    st.info("ℹ️ Skor total dihitung otomatis karena belum tersedia.")
+                except:
+                    st.error("❌ Data belum tersedia. Pastikan data Likert valid dan lakukan Uji Normalitas terlebih dahulu.")
+                    st.stop()
+            else:
+                skor_total = st.session_state["skor_total"]
+        
+            st.markdown("Fitur ini menampilkan analisis tambahan seperti uji homogenitas, uji beda, regresi sederhana, serta visualisasi distribusi data.")
+        
+            # Penjelasan Skewness dan Kurtosis
+            st.caption("""
+            ℹ️ *Skewness* > 0 menunjukkan kemencengan ke kanan, < 0 ke kiri.
+            *Kurtosis* tinggi menunjukkan ekor yang lebih berat dari distribusi normal.
+            """)
+        
+            # Boxplot Skor Total
+            st.subheader("📦 Boxplot Skor Total")
+            fig_box, ax_box = plt.subplots()
+            sns.boxplot(x=skor_total, color="lightblue", ax=ax_box)
+            ax_box.set_title("Boxplot Skor Total")
+            st.pyplot(fig_box)
 
     
             # Distribusi Histogram
