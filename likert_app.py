@@ -361,8 +361,7 @@ elif analisis_terpilih == "Uji Normalitas":
             ax4.set_title("QQ-Plot Skor Total", fontsize=14)
             st.pyplot(fig4)
 
-    
-      # --- Export Excel ---
+    # --- Export Excel ---
       elif analisis_terpilih == "Export Excel":
           st.subheader("📤 Export Data ke Excel")
       
@@ -381,3 +380,4 @@ elif analisis_terpilih == "Uji Normalitas":
               file_name="data_survei.xlsx",
               mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           )
+      
