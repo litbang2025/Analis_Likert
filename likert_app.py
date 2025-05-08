@@ -271,6 +271,18 @@ if uploaded_file:
             st.pyplot(fig4)
     
             # Uji Normalitas (misalnya Shapiro atau p sudah didefinisikan sebelumnya)
+      # Hitung ulang uji normalitas
+            n = len(skor_total)
+            if n <= 50:
+                stat, p = shapiro(skor_total)
+                metode = "Shapiro-Wilk"
+            else:
+                stat, p = kstest(skor_total, 'norm', args=(skor_total.mean(), skor_total.std()))
+                metode = "Kolmogorov-Smirnov"
+            
+            st.markdown(f"**Uji Normalitas ({metode})**")
+            st.write(f"Statistik: `{stat:.4f}`, p-value: `{p:.4f}`")
+
             if p <= 0.05:
                 st.subheader("📚 Rekomendasi Uji Non-parametrik")
                 st.markdown("""
