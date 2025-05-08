@@ -171,6 +171,9 @@ if uploaded_file:
             st.warning("⚠️ Data likert tidak ditemukan atau kosong.")
         else:
             skor_total = likert_df.mean(axis=1)
+          # Simpan skor_total ke session_state agar bisa digunakan di analisis lain
+            st.session_state["skor_total"] = skor_total
+
             rata2 = skor_total.mean()
             median = skor_total.median()
 
@@ -218,15 +221,19 @@ if uploaded_file:
                 "Standar Deviasi": [skor_total.std()]
             })
             st.dataframe(deskriptif_df)
-            st.session_state['skor_total'] = skor_total
+            
 
     elif analisis_terpilih == "Uji Lanjutan":
         st.subheader("🔬 Uji Lanjutan")
-        st.markdown("Fitur ini menampilkan analisis tambahan seperti uji homogenitas, uji beda, regresi sederhana, serta visualisasi distribusi data.")
-    
-        if 'skor_total' not in locals() and 'skor_total' not in globals():
-            st.error("❌ Variabel 'skor_total' belum tersedia. Pastikan Anda sudah melakukan perhitungan skor sebelumnya.")
+
+        # Cek apakah skor_total sudah disimpan
+        if "skor_total" not in st.session_state:
+            st.error("❌ Data belum tersedia. Silakan lakukan Uji Normalitas terlebih dahulu.")
         else:
+            skor_total = st.session_state["skor_total"]
+    
+            st.markdown("Fitur ini menampilkan analisis tambahan seperti uji homogenitas, uji beda, regresi sederhana, serta visualisasi distribusi data.")
+    
             # Penjelasan Skewness dan Kurtosis
             st.caption("""
             ℹ️ *Skewness* > 0 menunjukkan kemencengan ke kanan, < 0 ke kiri.
