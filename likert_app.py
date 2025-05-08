@@ -175,94 +175,94 @@ if uploaded_file:
         st.pyplot(fig2)
 
       # --- Uji Normalitas ---
-elif analisis_terpilih == "Uji Normalitas":
-    st.subheader("🧪 Uji Normalitas Data")
-
-    n = df.shape[0]
-    st.info(f"📌 Jumlah responden: **{n}**")
-
-    # Validasi jika data likert kosong
-    if likert_df.empty:
-        st.warning("⚠️ Data likert tidak ditemukan atau kosong.")
-    else:
-        # Hitung skor total setiap responden
-        skor_total = likert_df.mean(axis=1)
-
-        # Statistik deskriptif singkat
-        rata2 = skor_total.mean()
-        median = skor_total.median()
-        st.write(f"**Rata-rata Skor:** {rata2:.2f}")
-        st.write(f"**Median Skor:** {median:.2f}")
-
-        # Pilih metode uji normalitas
-        if n <= 50:
-            st.write("🔎 Metode: **Shapiro-Wilk Test** (n ≤ 50)")
-            stat, p = shapiro(skor_total)
+    elif analisis_terpilih == "Uji Normalitas":
+        st.subheader("🧪 Uji Normalitas Data")
+    
+        n = df.shape[0]
+        st.info(f"📌 Jumlah responden: **{n}**")
+    
+        # Validasi jika data likert kosong
+        if likert_df.empty:
+            st.warning("⚠️ Data likert tidak ditemukan atau kosong.")
         else:
-            st.write("🔎 Metode: **Kolmogorov-Smirnov Test** (n > 50)")
-            stat, p = kstest(skor_total, 'norm', args=(skor_total.mean(), skor_total.std()))
-
-        # Hasil uji normalitas
-        st.write(f"**Statistik Uji:** {stat:.4f}")
-        st.write(f"**p-value:** {p:.4f}")
-
-        # Interpretasi
-        if p > 0.05:
-            st.success("✅ Data terdistribusi normal (p > 0.05)")
-            st.info("✅ Cocok untuk uji parametrik seperti ANOVA atau regresi.")
-        else:
-            st.error("❌ Data tidak terdistribusi normal (p ≤ 0.05)")
-            st.warning("👉 Disarankan melanjutkan dengan uji non-parametrik.")
-
-        # Tambahan: QQ Plot
-        st.subheader("📉 QQ Plot")
-        fig_qq = plt.figure(figsize=(6, 6))
-        probplot(skor_total, dist="norm", plot=plt)
-        plt.title("QQ Plot - Skor Total")
-        st.pyplot(fig_qq)
-
-        # Tambahan: Histogram
-        st.subheader("📊 Histogram Skor Total")
-        fig_hist, ax_hist = plt.subplots()
-        ax_hist.hist(skor_total, bins=10, color="skyblue", edgecolor="black")
-        ax_hist.set_title("Distribusi Skor Total")
-        ax_hist.set_xlabel("Skor")
-        ax_hist.set_ylabel("Frekuensi")
-        st.pyplot(fig_hist)
-
-        # Statistik deskriptif lanjutan
-        st.subheader("📑 Statistik Deskriptif Lanjutan")
-        deskriptif_df = pd.DataFrame({
-            "Rata-rata": [rata2],
-            "Median": [median],
-            "Standar Deviasi": [skor_total.std()],
-            "Skewness": [skor_total.skew()],
-            "Kurtosis": [skor_total.kurt()],
-            "IQR": [skor_total.quantile(0.75) - skor_total.quantile(0.25)]
-        })
-        st.dataframe(deskriptif_df)
-
-        st.caption("""
-        ℹ️ *Skewness* > 0 menunjukkan kemencengan ke kanan, < 0 ke kiri.
-        *Kurtosis* tinggi menunjukkan ekor yang lebih berat dari distribusi normal.
-        """)
-
-        # Boxplot
-        st.subheader("📦 Boxplot Skor Total")
-        fig_box, ax_box = plt.subplots()
-        sns.boxplot(x=skor_total, color="lightblue", ax=ax_box)
-        ax_box.set_title("Boxplot Skor Total")
-        st.pyplot(fig_box)
-
-        # Rekomendasi jika data tidak normal
-        if p <= 0.05:
-            st.subheader("📚 Rekomendasi Uji Non-parametrik")
-            st.markdown("""
-            Karena data tidak berdistribusi normal, berikut rekomendasi uji lanjutan:
-            - **Uji Mann-Whitney U**: untuk dua kelompok. `scipy.stats.mannwhitneyu`
-            - **Uji Kruskal-Wallis**: untuk tiga kelompok atau lebih. `scipy.stats.kruskal`
-            - **Analisis Deskriptif**: Gunakan median, IQR, dan visualisasi seperti boxplot.
+            # Hitung skor total setiap responden
+            skor_total = likert_df.mean(axis=1)
+    
+            # Statistik deskriptif singkat
+            rata2 = skor_total.mean()
+            median = skor_total.median()
+            st.write(f"**Rata-rata Skor:** {rata2:.2f}")
+            st.write(f"**Median Skor:** {median:.2f}")
+    
+            # Pilih metode uji normalitas
+            if n <= 50:
+                st.write("🔎 Metode: **Shapiro-Wilk Test** (n ≤ 50)")
+                stat, p = shapiro(skor_total)
+            else:
+                st.write("🔎 Metode: **Kolmogorov-Smirnov Test** (n > 50)")
+                stat, p = kstest(skor_total, 'norm', args=(skor_total.mean(), skor_total.std()))
+    
+            # Hasil uji normalitas
+            st.write(f"**Statistik Uji:** {stat:.4f}")
+            st.write(f"**p-value:** {p:.4f}")
+    
+            # Interpretasi
+            if p > 0.05:
+                st.success("✅ Data terdistribusi normal (p > 0.05)")
+                st.info("✅ Cocok untuk uji parametrik seperti ANOVA atau regresi.")
+            else:
+                st.error("❌ Data tidak terdistribusi normal (p ≤ 0.05)")
+                st.warning("👉 Disarankan melanjutkan dengan uji non-parametrik.")
+    
+            # Tambahan: QQ Plot
+            st.subheader("📉 QQ Plot")
+            fig_qq = plt.figure(figsize=(6, 6))
+            probplot(skor_total, dist="norm", plot=plt)
+            plt.title("QQ Plot - Skor Total")
+            st.pyplot(fig_qq)
+    
+            # Tambahan: Histogram
+            st.subheader("📊 Histogram Skor Total")
+            fig_hist, ax_hist = plt.subplots()
+            ax_hist.hist(skor_total, bins=10, color="skyblue", edgecolor="black")
+            ax_hist.set_title("Distribusi Skor Total")
+            ax_hist.set_xlabel("Skor")
+            ax_hist.set_ylabel("Frekuensi")
+            st.pyplot(fig_hist)
+    
+            # Statistik deskriptif lanjutan
+            st.subheader("📑 Statistik Deskriptif Lanjutan")
+            deskriptif_df = pd.DataFrame({
+                "Rata-rata": [rata2],
+                "Median": [median],
+                "Standar Deviasi": [skor_total.std()],
+                "Skewness": [skor_total.skew()],
+                "Kurtosis": [skor_total.kurt()],
+                "IQR": [skor_total.quantile(0.75) - skor_total.quantile(0.25)]
+            })
+            st.dataframe(deskriptif_df)
+    
+            st.caption("""
+            ℹ️ *Skewness* > 0 menunjukkan kemencengan ke kanan, < 0 ke kiri.
+            *Kurtosis* tinggi menunjukkan ekor yang lebih berat dari distribusi normal.
             """)
+    
+            # Boxplot
+            st.subheader("📦 Boxplot Skor Total")
+            fig_box, ax_box = plt.subplots()
+            sns.boxplot(x=skor_total, color="lightblue", ax=ax_box)
+            ax_box.set_title("Boxplot Skor Total")
+            st.pyplot(fig_box)
+    
+            # Rekomendasi jika data tidak normal
+            if p <= 0.05:
+                st.subheader("📚 Rekomendasi Uji Non-parametrik")
+                st.markdown("""
+                Karena data tidak berdistribusi normal, berikut rekomendasi uji lanjutan:
+                - **Uji Mann-Whitney U**: untuk dua kelompok. `scipy.stats.mannwhitneyu`
+                - **Uji Kruskal-Wallis**: untuk tiga kelompok atau lebih. `scipy.stats.kruskal`
+                - **Analisis Deskriptif**: Gunakan median, IQR, dan visualisasi seperti boxplot.
+                """)
 
           
     
