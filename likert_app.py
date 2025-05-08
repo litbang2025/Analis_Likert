@@ -265,7 +265,7 @@ if uploaded_file:
               """)
 
         # Uji lanjutan
-      elif analisis_terpilih == "Uji Lanjutan":
+        elif analisis_terpilih == "Uji Lanjutan":
           st.subheader("🔬 Uji Lanjutan")
           st.markdown("Fitur ini akan menampilkan analisis tambahan seperti uji homogenitas, uji beda, atau regresi sederhana.")
       
