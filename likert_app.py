@@ -256,13 +256,74 @@ if uploaded_file:
     
             # Rekomendasi jika data tidak normal
             if p <= 0.05:
-                st.subheader("📚 Rekomendasi Uji Non-parametrik")
+    st.subheader("📚 Rekomendasi Uji Non-parametrik")
+    st.markdown("""
+    Karena data tidak berdistribusi normal, berikut rekomendasi uji lanjutan:
+    - **Uji Mann-Whitney U**: untuk dua kelompok. `scipy.stats.mannwhitneyu`
+    - **Uji Kruskal-Wallis**: untuk tiga kelompok atau lebih. `scipy.stats.kruskal`
+    - **Analisis Deskriptif**: Gunakan median, IQR, dan visualisasi seperti boxplot.
+    """)
+
+    # Pilih kolom kategori untuk Uji Kruskal-Wallis
+    kolom_kategori = st.selectbox("🔢 Pilih kolom kategori untuk Uji Kruskal-Wallis:", df.columns)
+
+    if kolom_kategori:
+        df_kruskal = df.copy()
+        df_kruskal["Skor_Total"] = skor_total
+
+        # Tampilkan jumlah data per kategori
+        st.write("📊 Jumlah data per kategori:")
+        st.dataframe(
+            df_kruskal[kolom_kategori].value_counts()
+            .reset_index()
+            .rename(columns={"index": kolom_kategori, kolom_kategori: "Jumlah"})
+        )
+
+        # Siapkan data untuk Kruskal-Wallis
+        grouped_data = [group["Skor_Total"].values for name, group in df_kruskal.groupby(kolom_kategori)]
+
+        if len(grouped_data) >= 3:
+            stat_kw, p_kw = kruskal(*grouped_data)
+            st.write(f"**Statistik Kruskal-Wallis:** {stat_kw:.4f}")
+            st.write(f"**p-value:** {p_kw:.4f}")
+
+            if p_kw <= 0.05:
+                st.success("✅ Perbedaan antar kelompok signifikan (p ≤ 0.05)")
+
+                # Narasi lanjutan
                 st.markdown("""
-                Karena data tidak berdistribusi normal, berikut rekomendasi uji lanjutan:
-                - **Uji Mann-Whitney U**: untuk dua kelompok. `scipy.stats.mannwhitneyu`
-                - **Uji Kruskal-Wallis**: untuk tiga kelompok atau lebih. `scipy.stats.kruskal`
-                - **Analisis Deskriptif**: Gunakan median, IQR, dan visualisasi seperti boxplot.
+                Karena hasil uji Kruskal-Wallis menunjukkan adanya perbedaan signifikan antar kelompok, 
+                maka dilakukan **analisis lanjutan (post-hoc)** menggunakan **Dunn's test** 
+                untuk mengetahui secara spesifik kelompok mana yang berbeda signifikan.
                 """)
+
+                try:
+                    import scikit_posthocs as sp
+                except ImportError:
+                    st.error("❌ Paket `scikit-posthocs` belum terpasang. Jalankan `pip install scikit-posthocs`.")
+                else:
+                    dunn_result = sp.posthoc_dunn(df_kruskal, val_col="Skor_Total", group_col=kolom_kategori, p_adjust='bonferroni')
+                    st.subheader("🔬 Hasil Dunn’s Test (Post-hoc)")
+                    st.write("p-value perbandingan antar kelompok (koreksi Bonferroni):")
+                    st.dataframe(dunn_result.round(4))
+                    st.markdown("""
+                    **Interpretasi**:
+                    - Nilai p ≤ 0.05 menunjukkan perbedaan signifikan antara dua kelompok.
+                    - Perhatikan baris dan kolom yang bersesuaian untuk identifikasi pasangan kelompok yang berbeda.
+                    """)
+            else:
+                st.info("ℹ️ Tidak ada perbedaan signifikan antar kelompok (p > 0.05)")
+        else:
+            st.warning("⚠️ Kolom kategori harus memiliki minimal tiga kelompok untuk Uji Kruskal-Wallis.")
+
+        # Visualisasi Boxplot
+        st.subheader(f"📦 Boxplot Skor Total per '{kolom_kategori}'")
+        fig6, ax6 = plt.subplots(figsize=(8, 5))
+        sns.boxplot(x=kolom_kategori, y="Skor_Total", data=df_kruskal, palette="Set2", ax=ax6)
+        ax6.set_title(f"Boxplot Skor Total berdasarkan {kolom_kategori}")
+        ax6.set_xlabel(kolom_kategori)
+        ax6.set_ylabel("Skor Total")
+        st.pyplot(fig6)
 
           
     
