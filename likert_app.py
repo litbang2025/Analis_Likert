@@ -215,6 +215,45 @@ if uploaded_file:
             - **Uji Kruskal-Wallis**: untuk membandingkan skor antar lebih dari dua kelompok.
             - **Uji Mann-Whitney U**: untuk membandingkan dua kelompok.
             - **Analisis deskriptif**: seperti median, IQR, dan boxplot.
+
+
+                    # Tambahan: QQ Plot
+        st.subheader("📉 QQ Plot")
+        fig4 = plt.figure(figsize=(6, 6))
+        probplot(skor_total, dist="norm", plot=plt)
+        plt.title("QQ Plot - Skor Total")
+        st.pyplot(fig4)
+
+        # Tambahan: Statistik Deskriptif Lanjutan
+        st.subheader("📑 Statistik Deskriptif Lanjutan")
+        deskriptif_df = pd.DataFrame({
+            "Rata-rata": [skor_total.mean()],
+            "Median": [skor_total.median()],
+            "Standar Deviasi": [skor_total.std()],
+            "Skewness": [skor_total.skew()],
+            "Kurtosis": [skor_total.kurt()],
+            "IQR": [skor_total.quantile(0.75) - skor_total.quantile(0.25)]
+        })
+        st.dataframe(deskriptif_df)
+
+        # Tambahan: Boxplot
+        st.subheader("📦 Boxplot Skor Total")
+        fig5, ax5 = plt.subplots()
+        sns.boxplot(x=skor_total, color="lightblue", ax=ax5)
+        ax5.set_title("Boxplot Skor Total")
+        st.pyplot(fig5)
+
+        # Tambahan: Analisis Non-parametrik jika tidak normal
+        if p <= 0.05:
+            st.subheader("📚 Uji Non-parametrik yang Direkomendasikan")
+            st.markdown("""
+            Jika Anda memiliki dua kelompok:
+            - **Uji Mann-Whitney U** (`scipy.stats.mannwhitneyu`)
+            
+            Jika Anda memiliki lebih dari dua kelompok:
+            - **Uji Kruskal-Wallis** (`scipy.stats.kruskal`)
+            """)
+
             """)
     
         # Visualisasi distribusi skor total
