@@ -254,7 +254,7 @@ if uploaded_file:
             - **Uji Kruskal-Wallis** (`scipy.stats.kruskal`)
             """)
 
-            """)
+          
     
         # Visualisasi distribusi skor total
         st.subheader("📊 Distribusi Skor Total")
