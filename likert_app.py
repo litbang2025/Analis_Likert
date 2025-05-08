@@ -235,6 +235,7 @@ if uploaded_file:
             "IQR": [skor_total.quantile(0.75) - skor_total.quantile(0.25)]
         })
         st.dataframe(deskriptif_df)
+          """)
 
         # Tambahan: Boxplot
         st.subheader("📦 Boxplot Skor Total")
