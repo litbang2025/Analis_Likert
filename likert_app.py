@@ -218,136 +218,136 @@ if uploaded_file:
                 "Standar Deviasi": [skor_total.std()]
             })
             st.dataframe(deskriptif_df)
-elif analisis_terpilih == "Uji Lanjutan":
-    st.subheader("🔬 Uji Lanjutan")
-    st.markdown("Fitur ini menampilkan analisis tambahan seperti uji homogenitas, uji beda, regresi sederhana, serta visualisasi distribusi data.")
-
-    if 'skor_total' not in locals() and 'skor_total' not in globals():
-        st.error("❌ Variabel 'skor_total' belum tersedia. Pastikan Anda sudah melakukan perhitungan skor sebelumnya.")
-    else:
-        # Penjelasan Skewness dan Kurtosis
-        st.caption("""
-        ℹ️ *Skewness* > 0 menunjukkan kemencengan ke kanan, < 0 ke kiri.
-        *Kurtosis* tinggi menunjukkan ekor yang lebih berat dari distribusi normal.
-        """)
-
-        # Boxplot Skor Total
-        st.subheader("📦 Boxplot Skor Total")
-        fig_box, ax_box = plt.subplots()
-        sns.boxplot(x=skor_total, color="lightblue", ax=ax_box)
-        ax_box.set_title("Boxplot Skor Total")
-        st.pyplot(fig_box)
-
-        # Distribusi Histogram
-        st.subheader("📊 Distribusi Skor Total")
-        fig3, ax3 = plt.subplots(figsize=(10, 4))
-        sns.histplot(skor_total, kde=True, bins=20, color="salmon", ax=ax3)
-        ax3.set_title("Distribusi Skor Total Responden", fontsize=14)
-        ax3.set_xlabel("Skor Total", fontsize=12)
-        ax3.set_ylabel("Jumlah Responden", fontsize=12)
-        st.pyplot(fig3)
-
-        # QQ-Plot
-        st.subheader("📈 Visualisasi QQ-Plot")
-        fig4, ax4 = plt.subplots(figsize=(6, 6))
-        probplot(skor_total, dist="norm", plot=ax4)
-        ax4.set_title("QQ-Plot Skor Total", fontsize=14)
-        st.pyplot(fig4)
-
-        # Uji Normalitas (misalnya Shapiro atau p sudah didefinisikan sebelumnya)
-        if p <= 0.05:
-            st.subheader("📚 Rekomendasi Uji Non-parametrik")
-            st.markdown("""
-            Karena data tidak berdistribusi normal, berikut rekomendasi uji lanjutan:
-            - **Uji Mann-Whitney U**: untuk dua kelompok. `scipy.stats.mannwhitneyu`
-            - **Uji Kruskal-Wallis**: untuk tiga kelompok atau lebih. `scipy.stats.kruskal`
-            - **Analisis Deskriptif**: Gunakan median, IQR, dan visualisasi seperti boxplot.
+    elif analisis_terpilih == "Uji Lanjutan":
+        st.subheader("🔬 Uji Lanjutan")
+        st.markdown("Fitur ini menampilkan analisis tambahan seperti uji homogenitas, uji beda, regresi sederhana, serta visualisasi distribusi data.")
+    
+        if 'skor_total' not in locals() and 'skor_total' not in globals():
+            st.error("❌ Variabel 'skor_total' belum tersedia. Pastikan Anda sudah melakukan perhitungan skor sebelumnya.")
+        else:
+            # Penjelasan Skewness dan Kurtosis
+            st.caption("""
+            ℹ️ *Skewness* > 0 menunjukkan kemencengan ke kanan, < 0 ke kiri.
+            *Kurtosis* tinggi menunjukkan ekor yang lebih berat dari distribusi normal.
             """)
-
-        # --- Uji Kruskal-Wallis dan Dunn Test ---
-        kolom_kategori = st.selectbox("🔢 Pilih kolom kategori untuk Uji Kruskal-Wallis:", df.columns)
-
-        if kolom_kategori:
-            df_kruskal = df[[kolom_kategori]].copy()
-            df_kruskal["Skor_Total"] = skor_total
-            df_kruskal.dropna(subset=[kolom_kategori, "Skor_Total"], inplace=True)
-
-            if not pd.api.types.is_categorical_dtype(df_kruskal[kolom_kategori]) and not pd.api.types.is_object_dtype(df_kruskal[kolom_kategori]):
-                st.warning("⚠️ Kolom kategori sebaiknya bertipe kategorik atau string.")
-
-            st.write("📊 Jumlah data per kategori:")
-            st.dataframe(
-                df_kruskal[kolom_kategori].value_counts()
-                .reset_index()
-                .rename(columns={"index": kolom_kategori, kolom_kategori: "Jumlah"})
-            )
-
-            st.write("📈 Distribusi Skor per Kelompok:")
-            fig = px.box(df_kruskal, x=kolom_kategori, y="Skor_Total", points="all", title="Boxplot Skor per Kelompok")
-            st.plotly_chart(fig)
-
-            grouped_data = [group["Skor_Total"].values for name, group in df_kruskal.groupby(kolom_kategori)]
-
-            if len(grouped_data) >= 3:
-                stat_kw, p_kw = kruskal(*grouped_data)
-                st.write(f"**Statistik Kruskal-Wallis:** {stat_kw:.4f}")
-                st.write(f"**p-value:** {p_kw:.4f}")
-
-                if p_kw <= 0.05:
-                    st.success("✅ Perbedaan antar kelompok signifikan (p ≤ 0.05)")
-                    st.markdown("""
-                    Karena hasil uji Kruskal-Wallis menunjukkan adanya perbedaan signifikan antar kelompok, 
-                    maka dilakukan **analisis lanjutan (post-hoc)** menggunakan **Dunn's test** 
-                    untuk mengetahui secara spesifik kelompok mana yang berbeda signifikan.
-                    """)
-                    try:
-                        import scikit_posthocs as sp
-                        dunn_result = sp.posthoc_dunn(
-                            df_kruskal, val_col="Skor_Total", group_col=kolom_kategori, p_adjust='bonferroni'
-                        )
-                        st.subheader("🔬 Hasil Dunn’s Test (Post-hoc)")
-                        st.write("p-value perbandingan antar kelompok (koreksi Bonferroni):")
-                        st.dataframe(dunn_result.round(4))
+    
+            # Boxplot Skor Total
+            st.subheader("📦 Boxplot Skor Total")
+            fig_box, ax_box = plt.subplots()
+            sns.boxplot(x=skor_total, color="lightblue", ax=ax_box)
+            ax_box.set_title("Boxplot Skor Total")
+            st.pyplot(fig_box)
+    
+            # Distribusi Histogram
+            st.subheader("📊 Distribusi Skor Total")
+            fig3, ax3 = plt.subplots(figsize=(10, 4))
+            sns.histplot(skor_total, kde=True, bins=20, color="salmon", ax=ax3)
+            ax3.set_title("Distribusi Skor Total Responden", fontsize=14)
+            ax3.set_xlabel("Skor Total", fontsize=12)
+            ax3.set_ylabel("Jumlah Responden", fontsize=12)
+            st.pyplot(fig3)
+    
+            # QQ-Plot
+            st.subheader("📈 Visualisasi QQ-Plot")
+            fig4, ax4 = plt.subplots(figsize=(6, 6))
+            probplot(skor_total, dist="norm", plot=ax4)
+            ax4.set_title("QQ-Plot Skor Total", fontsize=14)
+            st.pyplot(fig4)
+    
+            # Uji Normalitas (misalnya Shapiro atau p sudah didefinisikan sebelumnya)
+            if p <= 0.05:
+                st.subheader("📚 Rekomendasi Uji Non-parametrik")
+                st.markdown("""
+                Karena data tidak berdistribusi normal, berikut rekomendasi uji lanjutan:
+                - **Uji Mann-Whitney U**: untuk dua kelompok. `scipy.stats.mannwhitneyu`
+                - **Uji Kruskal-Wallis**: untuk tiga kelompok atau lebih. `scipy.stats.kruskal`
+                - **Analisis Deskriptif**: Gunakan median, IQR, dan visualisasi seperti boxplot.
+                """)
+    
+            # --- Uji Kruskal-Wallis dan Dunn Test ---
+            kolom_kategori = st.selectbox("🔢 Pilih kolom kategori untuk Uji Kruskal-Wallis:", df.columns)
+    
+            if kolom_kategori:
+                df_kruskal = df[[kolom_kategori]].copy()
+                df_kruskal["Skor_Total"] = skor_total
+                df_kruskal.dropna(subset=[kolom_kategori, "Skor_Total"], inplace=True)
+    
+                if not pd.api.types.is_categorical_dtype(df_kruskal[kolom_kategori]) and not pd.api.types.is_object_dtype(df_kruskal[kolom_kategori]):
+                    st.warning("⚠️ Kolom kategori sebaiknya bertipe kategorik atau string.")
+    
+                st.write("📊 Jumlah data per kategori:")
+                st.dataframe(
+                    df_kruskal[kolom_kategori].value_counts()
+                    .reset_index()
+                    .rename(columns={"index": kolom_kategori, kolom_kategori: "Jumlah"})
+                )
+    
+                st.write("📈 Distribusi Skor per Kelompok:")
+                fig = px.box(df_kruskal, x=kolom_kategori, y="Skor_Total", points="all", title="Boxplot Skor per Kelompok")
+                st.plotly_chart(fig)
+    
+                grouped_data = [group["Skor_Total"].values for name, group in df_kruskal.groupby(kolom_kategori)]
+    
+                if len(grouped_data) >= 3:
+                    stat_kw, p_kw = kruskal(*grouped_data)
+                    st.write(f"**Statistik Kruskal-Wallis:** {stat_kw:.4f}")
+                    st.write(f"**p-value:** {p_kw:.4f}")
+    
+                    if p_kw <= 0.05:
+                        st.success("✅ Perbedaan antar kelompok signifikan (p ≤ 0.05)")
                         st.markdown("""
-                        **Interpretasi**:
-                        - Nilai p ≤ 0.05 menunjukkan perbedaan signifikan antara dua kelompok.
-                        - Perhatikan baris dan kolom yang bersesuaian untuk identifikasi pasangan kelompok yang berbeda.
+                        Karena hasil uji Kruskal-Wallis menunjukkan adanya perbedaan signifikan antar kelompok, 
+                        maka dilakukan **analisis lanjutan (post-hoc)** menggunakan **Dunn's test** 
+                        untuk mengetahui secara spesifik kelompok mana yang berbeda signifikan.
                         """)
-                    except ImportError:
-                        st.error("❌ Paket `scikit-posthocs` belum terpasang. Jalankan `pip install scikit-posthocs`.")
+                        try:
+                            import scikit_posthocs as sp
+                            dunn_result = sp.posthoc_dunn(
+                                df_kruskal, val_col="Skor_Total", group_col=kolom_kategori, p_adjust='bonferroni'
+                            )
+                            st.subheader("🔬 Hasil Dunn’s Test (Post-hoc)")
+                            st.write("p-value perbandingan antar kelompok (koreksi Bonferroni):")
+                            st.dataframe(dunn_result.round(4))
+                            st.markdown("""
+                            **Interpretasi**:
+                            - Nilai p ≤ 0.05 menunjukkan perbedaan signifikan antara dua kelompok.
+                            - Perhatikan baris dan kolom yang bersesuaian untuk identifikasi pasangan kelompok yang berbeda.
+                            """)
+                        except ImportError:
+                            st.error("❌ Paket `scikit-posthocs` belum terpasang. Jalankan `pip install scikit-posthocs`.")
+                    else:
+                        st.info("ℹ️ Tidak ada perbedaan signifikan antar kelompok (p > 0.05)")
                 else:
-                    st.info("ℹ️ Tidak ada perbedaan signifikan antar kelompok (p > 0.05)")
-            else:
-                st.warning("⚠️ Kolom kategori harus memiliki minimal tiga kelompok untuk Uji Kruskal-Wallis.")
-
-            # Visualisasi Boxplot per kategori
-            st.subheader(f"📦 Boxplot Skor Total per '{kolom_kategori}'")
-            fig6, ax6 = plt.subplots(figsize=(10, 6))
-            sns.boxplot(x=kolom_kategori, y="Skor_Total", data=df_kruskal, palette="Set2", ax=ax6)
-            ax6.set_title(f"Boxplot Skor Total berdasarkan {kolom_kategori}", fontsize=14)
-            ax6.set_xlabel(kolom_kategori, fontsize=12)
-            ax6.set_ylabel("Skor Total", fontsize=12)
-            ax6.tick_params(axis='x', rotation=45)
-            st.pyplot(fig6)
-
-
-# --- Export Excel ---
-elif analisis_terpilih == "Export Excel":
-    st.subheader("📤 Export Data ke Excel")
-
-    @st.cache_data
-    def convert_df(df):
-        output = BytesIO()
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-              df.to_excel(writer, index=False, sheet_name='Data')
-        output.seek(0)
-        return output
-
-    excel_file = convert_df(df)
-    st.download_button(
-        label="Download Data Excel",
-        data=excel_file,
-        file_name="data_survei.xlsx",
-        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    )
-  
+                    st.warning("⚠️ Kolom kategori harus memiliki minimal tiga kelompok untuk Uji Kruskal-Wallis.")
+    
+                # Visualisasi Boxplot per kategori
+                st.subheader(f"📦 Boxplot Skor Total per '{kolom_kategori}'")
+                fig6, ax6 = plt.subplots(figsize=(10, 6))
+                sns.boxplot(x=kolom_kategori, y="Skor_Total", data=df_kruskal, palette="Set2", ax=ax6)
+                ax6.set_title(f"Boxplot Skor Total berdasarkan {kolom_kategori}", fontsize=14)
+                ax6.set_xlabel(kolom_kategori, fontsize=12)
+                ax6.set_ylabel("Skor Total", fontsize=12)
+                ax6.tick_params(axis='x', rotation=45)
+                st.pyplot(fig6)
+      
+      
+    # --- Export Excel ---
+    elif analisis_terpilih == "Export Excel":
+        st.subheader("📤 Export Data ke Excel")
+    
+        @st.cache_data
+        def convert_df(df):
+            output = BytesIO()
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                  df.to_excel(writer, index=False, sheet_name='Data')
+            output.seek(0)
+            return output
+    
+        excel_file = convert_df(df)
+        st.download_button(
+            label="Download Data Excel",
+            data=excel_file,
+            file_name="data_survei.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+      
