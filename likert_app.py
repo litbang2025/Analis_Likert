@@ -218,6 +218,8 @@ if uploaded_file:
                 "Standar Deviasi": [skor_total.std()]
             })
             st.dataframe(deskriptif_df)
+          st.session_state['skor_total'] = skor_total
+
     elif analisis_terpilih == "Uji Lanjutan":
         st.subheader("🔬 Uji Lanjutan")
         st.markdown("Fitur ini menampilkan analisis tambahan seperti uji homogenitas, uji beda, regresi sederhana, serta visualisasi distribusi data.")
