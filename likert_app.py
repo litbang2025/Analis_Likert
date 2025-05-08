@@ -173,9 +173,9 @@ if uploaded_file:
         fig2, ax2 = plt.subplots(figsize=(10, 6))
         sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
         st.pyplot(fig2)
-# --- Uji Normalitas ---
-elif analisis_terpilih == "Uji Normalitas":
-    st.subheader("🧪 Uji Normalitas Data")
+  # --- Uji Normalitas ---
+  elif analisis_terpilih == "Uji Normalitas":
+      st.subheader("🧪 Uji Normalitas Data")
 
     n = df.shape[0]
     st.info(f"📌 Jumlah responden: **{n}**")
