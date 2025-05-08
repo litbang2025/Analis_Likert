@@ -167,12 +167,12 @@ if uploaded_file:
 
         st.markdown(f"**Cronbach's Alpha: {alpha:.3f}** — {interpret_alpha(alpha)}")
 
-  # --- Korelasi ---
-  elif analisis_terpilih == "Korelasi":
-      st.subheader("🔥 Korelasi antar Pertanyaan")
-      fig2, ax2 = plt.subplots(figsize=(10, 6))
-      sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
-      st.pyplot(fig2)
+    # --- Korelasi ---
+    elif analisis_terpilih == "Korelasi":
+        st.subheader("🔥 Korelasi antar Pertanyaan")
+        fig2, ax2 = plt.subplots(figsize=(10, 6))
+        sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
+        st.pyplot(fig2)
 # --- Uji Normalitas ---
 elif analisis_terpilih == "Uji Normalitas":
     st.subheader("🧪 Uji Normalitas Data")
