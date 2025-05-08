@@ -167,15 +167,15 @@ if uploaded_file:
 
         st.markdown(f"**Cronbach's Alpha: {alpha:.3f}** — {interpret_alpha(alpha)}")
 
-    # --- Korelasi ---
-    elif analisis_terpilih == "Korelasi":
-        st.subheader("🔥 Korelasi antar Pertanyaan")
-        fig2, ax2 = plt.subplots(figsize=(10, 6))
-        sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
-        st.pyplot(fig2)
-  # --- Uji Normalitas ---
-  elif analisis_terpilih == "Uji Normalitas":
-      st.subheader("🧪 Uji Normalitas Data")
+  # --- Korelasi ---
+  elif analisis_terpilih == "Korelasi":
+      st.subheader("🔥 Korelasi antar Pertanyaan")
+      fig2, ax2 = plt.subplots(figsize=(10, 6))
+      sns.heatmap(likert_df.corr(), annot=True, cmap='YlGnBu', ax=ax2)
+      st.pyplot(fig2)
+# --- Uji Normalitas ---
+elif analisis_terpilih == "Uji Normalitas":
+    st.subheader("🧪 Uji Normalitas Data")
 
     n = df.shape[0]
     st.info(f"📌 Jumlah responden: **{n}**")
@@ -193,13 +193,13 @@ if uploaded_file:
         st.write(f"**Rata-rata Skor:** {rata2:.2f}")
         st.write(f"**Median Skor:** {median:.2f}")
 
-        # Pilih metode uji normalitas
-        if n <= 50:
-            st.write("🔎 Metode: **Shapiro-Wilk Test** (n ≤ 50)")
-            stat, p = shapiro(skor_total)
-        else:
-            st.write("🔎 Metode: **Kolmogorov-Smirnov Test** (n > 50)")
-            stat, p = kstest(skor_total, 'norm', args=(skor_total.mean(), skor_total.std()))
+    # Pilih metode uji normalitas
+    if n <= 50:
+        st.write("🔎 Metode: **Shapiro-Wilk Test** (n ≤ 50)")
+        stat, p = shapiro(skor_total)
+    else:
+        st.write("🔎 Metode: **Kolmogorov-Smirnov Test** (n > 50)")
+        stat, p = kstest(skor_total, 'norm', args=(skor_total.mean(), skor_total.std()))
 
         # Hasil uji normalitas
         st.write(f"**Statistik Uji:** {stat:.4f}")
