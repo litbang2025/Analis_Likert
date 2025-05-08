@@ -218,7 +218,7 @@ if uploaded_file:
                 "Standar Deviasi": [skor_total.std()]
             })
             st.dataframe(deskriptif_df)
-          st.session_state['skor_total'] = skor_total
+            st.session_state['skor_total'] = skor_total
 
     elif analisis_terpilih == "Uji Lanjutan":
         st.subheader("🔬 Uji Lanjutan")
